@@ -6,12 +6,8 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>SMAN 1 Balige </title>
-    <meta name="description"
-        content="SMA NEGERI 1 BALIGE merupakan salah satu Sekolah Menengah Atas Negeri yang ada di Provinsi Sumatera Utara, Indonesia dan merupakan salah satu sekolah menengah atas pertama dan tertua di soposurung Balige yang didirikan pada tanggal 27 Juli 1950 oleh Bapak Albinus Simanjuntak.">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" type="image/x-icon"
-        href="https://pkm.sman1balige.delcom.org/img/logo/logo-sma-n1-balige.png">
+    <title>Dashboard</title>
+    <link rel="shortcut icon" type="image/x-icon" href="\assets\images\logo.png">
     {{-- <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/source-sans-3-5.0.12/index.css"> --}}
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     {{-- <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/overlayscrollbars-2.3.0/styles/overlayscrollbars.min.css"> --}}
@@ -41,7 +37,7 @@
 
 </head>
 
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" >
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         <!--begin::Header-->
@@ -114,11 +110,11 @@
                 <!--begin::Brand Link-->
                 <a href="https://pkm.sman1balige.delcom.org/sis/app/dashboard" class="brand-link">
                     <!--begin::Brand Image-->
-                    <img src="https://pkm.sman1balige.delcom.org/img/logo/logo-sma-n1-balige.png" alt="SMAN 1 Balige"
+                    <img src="\assets\images\logo.png" alt="Institut Teknologi Del"
                         class="brand-image opacity-75 shadow">
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
-                    <span class="brand-text fw-light">SIS</span>
+                    <span class="brand-text fw-light">Dashboard</span>
                     <!--end::Brand Text-->
                 </a>
                 <!--end::Brand Link-->
@@ -134,39 +130,32 @@
 
                         <li class="nav-item">
                             <a href="#" class="nav-link ">
-                                <i class="nav-icon bi bi-speedometer"></i>
-                                <p>Dasbor</p>
+                                <i class="nav-icon bi bi-house"></i>
+                                <p>Home</p>
                             </a>
                         </li>
-
-                        <li class="nav-header">WEB SEKOLAH</li>
-
 
                         <li class="nav-item  menu-open ">
                             <a href="" class="nav-link">
-                                <i class="nav-icon bi bi-house"></i>
+                                <i class="nav-icon bi bi-speedometer"></i>
                                 <p>
-                                    Beranda
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
+                                    Dashboard
                                 </p>
                             </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="" class="nav-link active">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Informasi Dasar</p>
-                                    </a>
-                                </li>
-
-                            </ul>
                         </li>
 
+                        <li class="nav-item">
+                            <a href="/sarana-prasarana" class="nav-link ">
+                                <i class="nav-icon bi bi-arrow-left-right"></i>
+                                <p>Log Keluar/Masuk</p>
+                            </a>
+                        </li>
 
                         <li class="nav-item ">
                             <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi bi-journal-text"></i>
+                                <i class="nav-icon bi bi-card-checklist"></i>
                                 <p>
-                                    Profil
+                                    Absensi
                                     <i class="nav-arrow bi bi-chevron-right"></i>
                                 </p>
                             </a>
@@ -176,113 +165,24 @@
                                     <a href=""
                                         class="nav-link ">
                                         <i class="nav-icon bi bi-circle"></i>
-                                        <p>Informasi Dasar</p>
+                                        <p>Absensi Kelas</p>
                                     </a>
                                 </li>
 
                                 <li class="nav-item">
                                     <a href="" class="nav-link ">
                                         <i class="nav-icon bi bi-circle"></i>
-                                        <p>Staf Guru & Karyawan</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Prestasi</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Alumni</p>
+                                        <p>Absensi Kampus</p>
                                     </a>
                                 </li>
 
                             </ul>
                         </li>
-
-
-                        <li class="nav-item">
-                            <a href="/sarana-prasarana" class="nav-link ">
-                                <i class="nav-icon bi bi-hammer"></i>
-                                <p>Sarana & Prasarana</p>
-                            </a>
-                        </li>
-
-
-                        <li class="nav-item ">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-newspaper"></i>
-                                <p>
-                                    Informasi
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview">
-
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>PPDB</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="" class="nav-link ">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Berita & Artikel</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Galeri</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Arsip</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="" class="nav-link">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Hubungi Kami</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-
-                        <li class="nav-item">
-                            <a href="https://pkm.sman1balige.delcom.org/sis/app/platform" class="nav-link ">
-                                <i class="nav-icon bi bi-grid"></i>
-                                <p>Platform</p>
-                            </a>
-                        </li>
-
-
-                        <li class="nav-header">ADMIN</li>
 
                         <li class="nav-item">
                             <a href="/kelola-pengguna" class="nav-link ">
-                                <i class="nav-icon bi bi-people"></i>
-                                <p>Kelola Pengguna</p>
-                            </a>
-                        </li>
-
-
-                        <li class="nav-header">LOGS</li>
-
-                        <li class="nav-item">
-                            <a href="https://pkm.sman1balige.delcom.org/sis/app/logs" class="nav-link ">
-                                <i class="nav-icon bi bi-collection"></i>
-                                <p>Catatan Perubahan</p>
+                                <i class="nav-icon bi bi-exclamation-triangle"></i>
+                                <p>Pelanggaran</p>
                             </a>
                         </li>
 
@@ -308,8 +208,8 @@
             <!--end::To the end-->
             <!--begin::Copyright-->
             <strong>
-                Copyright &copy; 2024
-                <a href="#" class="text-decoration-none">SMAN 1 Balige</a>.
+                Kelompok 5 &copy; 2024
+                <a href="#" class="text-decoration-none">Dashboard</a>.
             </strong>
             <!--end::Copyright-->
         </footer>
