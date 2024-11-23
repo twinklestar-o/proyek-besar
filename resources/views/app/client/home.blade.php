@@ -20,7 +20,7 @@
     <!-- Main Content -->
     <main class="pl-64 mr-5 pt-20">
         <div class="flex flex-col md:flex-row w-full">
-            <div class="w-6/12 sm:w-full">
+            <div class="w-6/12 sm:w-full d-flex content-center">
                 <h1 class="text-2xl font-bold mb-1">Jumlah Mahasiswa</h1>
                 <p class="mb-1">
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo eveniet, tenetur saepe ullam doloremque tempora, incidunt natus eligendi id quaerat eum cumque nisi temporibus molestias quibusdam officiis! Eius, odit dicta!
@@ -32,7 +32,7 @@
                     <label for="prodi">Program Studi</label><br>
                 </form>
             </div>
-            <div class="w-6/12 sm:w-full">
+            <div class="w-6/12 sm:w-full d-flex content-center">
                 <canvas id="jlhMahasiswaAngkatan"></canvas>
                 <canvas id="jlhMahasiswaProdi" style="display: none;"></canvas>
             </div>
@@ -41,8 +41,8 @@
 
         <div class="h-3"></div>
 
-        <div class="flex flex-col md:flex-row w-full">
-          <div class="w-6/12 sm:w-full">
+        <div class="flex flex-col md:flex-row w-full mb-4">
+          <div class="w-6/12 sm:w-full" d-flex content-center>
               <h1 class="text-2xl font-bold mb-1">Prestasi</h1>
               <p class="mb-1">
                   Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo eveniet, tenetur saepe ullam doloremque tempora, incidunt natus eligendi id quaerat eum cumque nisi temporibus molestias quibusdam officiis! Eius, odit dicta!
@@ -67,7 +67,7 @@
                   <label for="staff">Dosen/Staff</label><br>
               </form>
           </div>
-          <div class="w-6/12 sm:w-full">
+          <div class="w-6/12 sm:w-full d-flex content-center">
               <canvas id="prestasiTAM" style="display: none;"></canvas>
               <canvas id="prestasiTAD" style="display: none;"></canvas>
               <canvas id="prestasiTNM" style="display: none;"></canvas>
@@ -81,8 +81,9 @@
       </div>
 
       <div class="h-3"></div>
-      <div class="flex flex-col md:flex-row w-full">
-        <div class="w-6/12 sm:w-full">
+
+      <div class="flex flex-col md:flex-row w-full mb-5">
+        <div class="w-6/12 sm:w-full d-flex content-center">
             <h1 class="text-2xl font-bold mb-1">Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus</h1>
             <h5><b>1. MBKM</b></h5>
             <p class="mb-1">
@@ -109,7 +110,7 @@
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore 
             </p>
         </div>
-        <div class="w-6/12 sm:w-full">
+        <div class="w-6/12 sm:w-full d-flex content-center">
             <canvas id="jlhMahasiswaKegiatanChart"></canvas>
         </div>
         <div class="column"></div>
