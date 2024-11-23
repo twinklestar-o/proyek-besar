@@ -7,16 +7,26 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Dashboard</title>
-    <link rel="shortcut icon" type="image/x-icon" href="\assets\images\logo.png">
-    {{-- <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/source-sans-3-5.0.12/index.css"> --}}
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    {{--
+    <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/source-sans-3-5.0.12/index.css"> --}}
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
-    {{-- <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/overlayscrollbars-2.3.0/styles/overlayscrollbars.min.css"> --}}
+    {{--
+    <link rel="stylesheet"
+        href="https://pkm.sman1balige.delcom.org/assets/vendor/overlayscrollbars-2.3.0/styles/overlayscrollbars.min.css">
+    --}}
     <!--end::Third Party Plugin(OverlayScrollbars)-->
     <!--begin::Required Plugin(AdminLTE)-->
     <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/adminlte-4.0.0/css/adminlte.min.css">
     <!--end::Required Plugin(AdminLTE)-->
-    {{-- <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-bs5-2.1.2/css/dataTables.bootstrap5.min.css"> --}}
-    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css" integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous"><!--end::Fonts--><!--begin::Third Party Plugin(OverlayScrollbars)--> --}}
+    {{--
+    <link rel="stylesheet"
+        href="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-bs5-2.1.2/css/dataTables.bootstrap5.min.css">
+    --}}
+    {{--
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
+        integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous">
+    <!--end::Fonts--><!--begin::Third Party Plugin(OverlayScrollbars)--> --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.3.0/styles/overlayscrollbars.min.css"
         integrity="sha256-dSokZseQNT08wYEWiz5iLI8QPlKxG+TswNRD8k35cpg=" crossorigin="anonymous">
     <!--end::Third Party Plugin(OverlayScrollbars)-->
@@ -37,7 +47,7 @@
 
 </head>
 
-<body class="layout-fixed sidebar-expand-lg bg-body-tertiary" >
+<body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         <!--begin::Header-->
@@ -110,11 +120,10 @@
                 <!--begin::Brand Link-->
                 <a href="https://pkm.sman1balige.delcom.org/sis/app/dashboard" class="brand-link">
                     <!--begin::Brand Image-->
-                    <img src="\assets\images\logo.png" alt="Institut Teknologi Del"
-                        class="brand-image opacity-75 shadow">
+                    <img src="Logo.png" alt="Institut Teknologi Del" class="brand-image opacity-75 shadow">
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
-                    <span class="brand-text fw-light">Dashboard</span>
+                    <span class="brand-text fw-light">Dashboard Admin</span>
                     <!--end::Brand Text-->
                 </a>
                 <!--end::Brand Link-->
@@ -162,8 +171,7 @@
                             <ul class="nav nav-treeview">
 
                                 <li class="nav-item">
-                                    <a href=""
-                                        class="nav-link ">
+                                    <a href="" class="nav-link ">
                                         <i class="nav-icon bi bi-circle"></i>
                                         <p>Absensi Kelas</p>
                                     </a>
@@ -224,7 +232,7 @@
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
     <script
         src="https://pkm.sman1balige.delcom.org/assets/vendor/overlayscrollbars-2.3.0/browser/overlayscrollbars.browser.es6.min.js">
-    </script>
+        </script>
     <!--end::Third Party Plugin(OverlayScrollbars)-->
 
     <!--begin::Required Plugin(popperjs for Bootstrap 5)-->
@@ -240,8 +248,9 @@
     <!--end::Required Plugin(AdminLTE)-->
 
     <script src="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-2.1.2/js/dataTables.min.js"></script>
-    <script src="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-bs5-2.1.2/js/dataTables.bootstrap5.min.js">
-    </script>
+    <script
+        src="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-bs5-2.1.2/js/dataTables.bootstrap5.min.js">
+        </script>
 
     <script>
         const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
@@ -250,7 +259,7 @@
             scrollbarAutoHide: "leave",
             scrollbarClickScroll: true,
         };
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
             if (
                 sidebarWrapper &&
