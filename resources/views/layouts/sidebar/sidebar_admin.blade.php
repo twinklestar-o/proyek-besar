@@ -118,9 +118,10 @@
             <!--begin::Sidebar Brand-->
             <div class="sidebar-brand">
                 <!--begin::Brand Link-->
+                <!--begin::Brand Link-->
                 <a href="https://pkm.sman1balige.delcom.org/sis/app/dashboard" class="brand-link">
                     <!--begin::Brand Image-->
-                    <img src="Logo.png" alt="Institut Teknologi Del" class="brand-image opacity-75 shadow">
+                    <img src="/Logo.png" alt="Institut Teknologi Del" class="brand-image opacity-75 shadow">
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
                     <span class="brand-text fw-light">Dashboard Admin</span>
@@ -137,30 +138,35 @@
                     <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu"
                         data-accordion="false">
 
+                        <!-- Home Link -->
                         <li class="nav-item">
-                            <a href="#" class="nav-link ">
+                            <a href="{{ url('/') }}" class="nav-link {{ Request::is('/') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-house"></i>
                                 <p>Home</p>
                             </a>
                         </li>
 
-                        <li class="nav-item  menu-open ">
-                            <a href="" class="nav-link">
+                        <!-- Dashboard Link -->
+                        <li class="nav-item">
+                            <a href="{{ url('/admin/dashboard') }}"
+                                class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-speedometer"></i>
-                                <p>
-                                    Dashboard
-                                </p>
+                                <p>Dashboard</p>
                             </a>
                         </li>
 
+                        <!-- Log Link -->
                         <li class="nav-item">
-                            <a href="/sarana-prasarana" class="nav-link ">
+                            <a href="{{ url('/admin/log') }}"
+                                class="nav-link {{ Request::is('admin/log') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-arrow-left-right"></i>
                                 <p>Log Keluar/Masuk</p>
                             </a>
                         </li>
 
-                        <li class="nav-item ">
+                        <!-- Absensi Dropdown -->
+                        <li
+                            class="nav-item {{ Request::is('admin/absensi-kelas') || Request::is('admin/absensi-kampus') ? 'menu-open' : '' }}">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-card-checklist"></i>
                                 <p>
@@ -169,36 +175,39 @@
                                 </p>
                             </a>
                             <ul class="nav nav-treeview">
-
                                 <li class="nav-item">
-                                    <a href="" class="nav-link ">
+                                    <a href="{{ url('/admin/absensi-kelas') }}"
+                                        class="nav-link {{ Request::is('admin/absensi-kelas') ? 'active' : '' }}">
                                         <i class="nav-icon bi bi-circle"></i>
                                         <p>Absensi Kelas</p>
                                     </a>
                                 </li>
-
                                 <li class="nav-item">
-                                    <a href="" class="nav-link ">
+                                    <a href="{{ url('/admin/absensi-kampus') }}"
+                                        class="nav-link {{ Request::is('admin/absensi-kampus') ? 'active' : '' }}">
                                         <i class="nav-icon bi bi-circle"></i>
                                         <p>Absensi Kampus</p>
                                     </a>
                                 </li>
-
                             </ul>
                         </li>
 
+                        <!-- Pelanggaran Link -->
                         <li class="nav-item">
-                            <a href="/kelola-pengguna" class="nav-link ">
+                            <a href="{{ url('/admin/pelanggaran') }}"
+                                class="nav-link {{ Request::is('admin/pelanggaran') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-exclamation-triangle"></i>
                                 <p>Pelanggaran</p>
                             </a>
                         </li>
 
                     </ul>
+
                     <!--end::Sidebar Menu-->
                 </nav>
             </div>
             <!--end::Sidebar Wrapper-->
+
         </aside>
         <!--end::Sidebar-->
 
