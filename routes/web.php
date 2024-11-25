@@ -1,13 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-// Route::get('/', function () {
-//     return redirect('app/client/home');
-// });
+use App\Http\Controllers\NavController;
 
 //Static pages
-Route::get('/', fn() => view('app/client/home'))->name('home');
+Route::get('/pelanggaran', [NavController::class, 'pelanggaran'])->name('pelanggaran');
+Route::get('/', [NavController::class, ' home'])->name('home');
 
 Route::get('/home', function () {
     return view('app/client/home');

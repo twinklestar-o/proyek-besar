@@ -1,4 +1,3 @@
-<!-- resources/views/layout/header.blade.php -->
 <header class="bg-[#0078C4] text-white py-4 px-6 w-full fixed top-0 z-10">
   <div class="flex justify-between items-center">
     <div class="flex items-center">
