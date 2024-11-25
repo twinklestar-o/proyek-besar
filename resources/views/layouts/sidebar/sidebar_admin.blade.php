@@ -32,11 +32,15 @@
     <!--end::Third Party Plugin(OverlayScrollbars)-->
     <!--begin::Third Party Plugin(Bootstrap Icons)-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css"
-        integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigin="anonymous">
+        integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigi n="anonymous">
     <!--end::Third Party Plugin(Bootstrap Icons)-->
     <!--begin::Required Plugin(AdminLTE)-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.css"
         integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0=" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css"
+        integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigin="anonymous">
+
     <!-- OPTIONAL SCRIPTS -->
 
     <style>
@@ -82,7 +86,7 @@
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                             <img src="https://pkm.sman1balige.delcom.org/img/sis/user/photo-1-037d6036-3485-4e1c-8952-838d475f016f.jpg"
                                 class="user-image rounded-circle shadow" alt="Photo Profile">
-                            <span class="d-none d-md-inline">User Admin</span>
+                            <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                             <!--begin::User Image-->
@@ -90,7 +94,7 @@
                                 <img src="https://pkm.sman1balige.delcom.org/img/sis/user/photo-1-037d6036-3485-4e1c-8952-838d475f016f.jpg"
                                     class="rounded-circle shadow" alt="Photo Profile">
                                 <p>
-                                    User Admin
+                                    <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                                     <small>Role: Admin</small>
                                 </p>
                             </li>
@@ -99,8 +103,19 @@
                             <!--begin::Menu Footer-->
                             <li class="user-footer">
                                 <a href="https://pkm.sman1balige.delcom.org/sis/app/user/pengaturan"
-                                    class="btn btn-default btn-flat">Pengaturan</a>
-                                <a href="" class="btn btn-default btn-flat float-end">Keluar</a>
+                                    class="btn btn-flat" style="color: grey;">
+                                    <i class="bi bi-gear"></i> Pengaturan
+                                </a>
+                                <a href="{{ route('logout') }}" class="btn btn-flat float-end" style="color: red;"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="bi bi-box-arrow-right"></i> Keluar
+                                </a>
+
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    style="display: none;">
+                                    @csrf
+                                </form>
+
                             </li>
                             <!--end::Menu Footer-->
                         </ul>

@@ -6,17 +6,16 @@
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-body text-center">
-                    <!-- Menempatkan gambar di tengah -->
-                    <img src="\assets\images\logo.png" alt="Logo" class="mb-1" style="width: 5rem; height: auto;">
-                    <!-- Judul berada di bawah gambar -->
+                    <img src="/Logo.png" alt="Logo" class="mb-1" style="width: 5rem; height: auto;">
                     <h5 class="card-title mb-4">Sistem Informasi Orangtua Mahasiswa</h5>
-                    <form method="POST" action="">
+                    <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="form-group mt-4 mb-3 text-start">
-                            <label for="email">Email</label>
-                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
-                                name="email" value="{{ old('email') }}" required autofocus>
-                            @error('email')
+                            <label for="username">Username</label>
+                            <input id="username" type="text"
+                                class="form-control @error('username') is-invalid @enderror" name="username"
+                                value="{{ old('username') }}" required autofocus>
+                            @error('username')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>
