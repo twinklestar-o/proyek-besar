@@ -7,8 +7,13 @@ use App\Http\Controllers\HomeController;
 
 // Public routes
 Route::get('/', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
     return view('app/client/home');
-});
+})->name('home');
+
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
