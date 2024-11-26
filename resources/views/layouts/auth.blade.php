@@ -2,10 +2,15 @@
 <html>
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Institut Teknologi Del</title>
   <link href="{{ asset('assets/vendor/bootstrap-5.3.3-dist/css/bootstrap.min.css') }}" rel="stylesheet" />
   <link href="\assets\images\logo.png" alt="Logo" rel="shortcut icon">
   <link rel="stylesheet" href="resources\css\style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
   <style>
     html,
     body,
@@ -47,6 +52,12 @@
 </head>
 
 <body>
+  <!-- Include Header -->
+  @include('layouts.headerbar')
+
+  <!-- Include Sidebar -->
+  @include('layouts.sidebar.sidebar_display')
+  
   <div class="container-fluid p-5">
     @yield('content')
   </div>
