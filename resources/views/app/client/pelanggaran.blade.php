@@ -60,7 +60,7 @@
   </style>
 
   <!-- Main Content -->
-  <main class="pl-64 mr-5 pt-20">
+  <main class="pl-56 mr-5 pt-10">
       <div>
           <h1 class="text-2xl font-bold mb-1">Pelanggaran</h1>
           <p class="mb-1">
@@ -71,15 +71,21 @@
       <div class="mt-4 flex flex-row">
           <div class="dropdown pr-4">
               <button onclick="myFunction()" class="dropbtn flex items-center flex justify-center">
-                  Dropdown
+                  Asrama
                   <svg class="h-4 w-4 text-gray-900 ml-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                       <path stroke="none" d="M0 0h24v24H0z" />
                       <polyline points="6 9 12 15 18 9" />
                   </svg>
               </button>
               <div id="myDropdown" class="dropdown-content">
-                  <a href="">Asrama</a>
-                  <a href="">Kampus</a>
+                  <a href="">Asrama Silo</a>
+                  <a href="">Asrama Kapernaum</a>
+                  <a href="">Asrama Pniel</a>
+                  <a href="">Asrama Jati</a>
+                  <a href="">Asrama Rusun 1</a>
+                  <a href="">Asrama Rusun 2</a>
+                  <a href="">Asrama Rusun 3</a>
+                  <a href="">Asrama Rusun 4</a>
               </div>
           </div>
 
@@ -93,7 +99,8 @@
           </div>
       </div>
 
-      <div class="box mt-10 flex flex-col items-center justify-around md:flex-row">
+      <div class="box mt-10 flex flex-col items-center justify-around ```html
+      md:flex-row">
           <div class="mr-2" id="pelanggaran-info">
               <p>
                   Ringan : 43 <br>
@@ -109,12 +116,67 @@
               </div>
           </div>
       </div>
+
+      <div class="mt-2">
+        <p>History : </p>
+        <div class="box mt-10 flex flex-col items-center justify-around md:flex-row">
+            <p><b>History Chart: </b></p>
+            <div class="w-6/12 sm:w-full d-flex content-center">
+                <canvas id="historyChart"></canvas>
+            </div>
+        </div>
+      </div>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-      const barColors = ["#0078C4", "#0078C4", "#0078C4"];
+      const barColors = ["royalblue", "darkgray", "red"];
       const tingkatan = ["Ringan", "Sedang", "Berat"];
+      const tahun = ["2019", "2020", "2021", "2022", "2023", "2024"];
+
       const jlhPelanggaranAsrama = [43, 45, 47];
       const jlhPelanggaranKampus = [3, 4, 1];
+      const jlhHistoryPelanggaranRingan = [16, 13, 23, 21, 23, 11, 11];
+      const jlhHistoryPelanggaranSedang = [22, 13, 13, 21, 21, 12, 12];
+      const jlhHistoryPelanggaranBerat = [2, 3, 3, 2, 4, 3, 5];
+
+      let historyChart;
+      historyChart = new Chart("historyChart", {
+        type: "bar",
+        data: {
+            labels: tahun,
+            datasets: [
+                {
+                    label: 'Ringan',
+                    backgroundColor: 'royalblue',
+                    data: jlhHistoryPelanggaranRingan
+                },
+                {
+                    label: 'Sedang',
+                    backgroundColor: 'darkgray',
+                    data: jlhHistoryPelanggaranSedang
+                },
+                {
+                    label: 'Berat',
+                    backgroundColor: 'red',
+                    data: jlhHistoryPelanggaranBerat
+                }
+            ]
+        },
+        options: {
+            legend: { display: true },
+            title: {
+                display: true,
+                text: "Jumlah Pelanggaran per Tahun"
+            },
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
 
       const pelanggaranChart = new Chart("jumlahPelanggaran", {
           type: "bar",

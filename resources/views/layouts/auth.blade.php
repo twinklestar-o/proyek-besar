@@ -18,10 +18,10 @@
       height: 100vh;
     }
 
-    .container-fluid {
+    /* .container-fluid {
       display: flex;
       align-items: center;
-    }
+    } */
 
     h5 {
       font-size: 1.3rem;
