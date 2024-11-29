@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Dashboard</title>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
     {{--
     <link rel="stylesheet" href="https://pkm.sman1balige.delcom.org/assets/vendor/source-sans-3-5.0.12/index.css"> --}}
     <!--begin::Third Party Plugin(OverlayScrollbars)-->
@@ -46,6 +46,10 @@
     <style>
         .note-editable {
             height: 100% !important;
+        }
+
+        .bg-custom-green {
+            background-color: #24AC54 !important;
         }
     </style>
 
@@ -133,18 +137,18 @@
             <!--begin::Sidebar Brand-->
             <div class="sidebar-brand">
                 <!--begin::Brand Link-->
-                <!--begin::Brand Link-->
-                <a href="https://pkm.sman1balige.delcom.org/sis/app/dashboard" class="brand-link">
+                <div class="brand-link">
                     <!--begin::Brand Image-->
                     <img src="/Logo.png" alt="Institut Teknologi Del" class="brand-image opacity-75 shadow">
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
                     <span class="brand-text fw-light">Dashboard Admin</span>
                     <!--end::Brand Text-->
-                </a>
+                </div>
                 <!--end::Brand Link-->
             </div>
             <!--end::Sidebar Brand-->
+
 
             <!--begin::Sidebar Wrapper-->
             <div class="sidebar-wrapper">
