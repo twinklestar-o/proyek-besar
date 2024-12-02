@@ -5,9 +5,6 @@
       <span class="text-lg font-bold">Del Statistics</span>
     </div>
     <nav class="space-x-4">
-      <a href="#" class="hover:text-gray-200">Home</a>
-      <a href="#" class="hover:text-gray-200">About</a>
-      <a href="#" class="hover:text-gray-200">Contact</a>
     </nav>
   </div>
 </header>
