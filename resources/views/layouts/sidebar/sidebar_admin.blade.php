@@ -47,10 +47,6 @@
         .note-editable {
             height: 100% !important;
         }
-
-        .bg-custom-green {
-            background-color: #24AC54 !important;
-        }
     </style>
 
 </head>
@@ -149,7 +145,6 @@
             </div>
             <!--end::Sidebar Brand-->
 
-
             <!--begin::Sidebar Wrapper-->
             <div class="sidebar-wrapper">
                 <nav class="mt-2">
@@ -159,7 +154,7 @@
 
                         <!-- Home Link -->
                         <li class="nav-item">
-                            <a href="{{ url('/') }}" class="nav-link {{ Request::is('/') ? 'active' : '' }}">
+                            <a href="{{ url('/home') }}" class="nav-link {{ Request::is('/') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-house"></i>
                                 <p>Home</p>
                             </a>

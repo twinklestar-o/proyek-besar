@@ -11,28 +11,29 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Home route (protected by 'auth' middleware)
 Route::middleware('auth')->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
 
     // Admin routes
     Route::prefix('admin')->group(function () {
+
         Route::get('/dashboard', function () {
-            return view('app/admin/dashboard');
+            return view('app/dashboard');
         })->name('admin.dashboard');
 
         Route::get('/absensi-kampus', function () {
-            return view('app/admin/absensi_kampus');
+            return view('app/absensi_kampus');
         })->name('admin.absensi_kampus');
 
         Route::get('/absensi-kelas', function () {
-            return view('app/admin/absensi_kelas');
+            return view('app/absensi_kelas');
         })->name('admin.absensi_kelas');
 
         Route::get('/log', function () {
-            return view('app/admin/log');
+            return view('app/log');
         })->name('admin.log');
 
         Route::get('/pelanggaran', function () {
-            return view('app/admin/pelanggaran');
+            return view('app/pelanggaran');
         })->name('admin.pelanggaran');
     });
 });

@@ -13,7 +13,7 @@ class LoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('app.admin.login');
+        return view('app.login');
     }
 
     public function login(Request $request)
@@ -71,7 +71,7 @@ class LoginController extends Controller
                 session()->flash('warning', 'Logged in, but an error occurred while contacting external API.');
             }
 
-            return redirect()->intended('/');
+            return redirect()->intended('/home');
         }
 
         return back()->withErrors([
