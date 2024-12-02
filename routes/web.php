@@ -16,10 +16,6 @@ Route::middleware('auth')->group(function () {
     // Admin routes
     Route::prefix('admin')->group(function () {
 
-        Route::get('/dashboard', function () {
-            return view('app/dashboard');
-        })->name('admin.dashboard');
-
         Route::get('/absensi-kampus', function () {
             return view('app/absensi_kampus');
         })->name('admin.absensi_kampus');

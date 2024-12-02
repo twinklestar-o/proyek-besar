@@ -160,15 +160,6 @@
                             </a>
                         </li>
 
-                        <!-- Dashboard Link -->
-                        <li class="nav-item">
-                            <a href="{{ url('/admin/dashboard') }}"
-                                class="nav-link {{ Request::is('admin/dashboard') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-speedometer"></i>
-                                <p>Dashboard</p>
-                            </a>
-                        </li>
-
                         <!-- Log Link -->
                         <li class="nav-item">
                             <a href="{{ url('/admin/log') }}"
@@ -178,32 +169,22 @@
                             </a>
                         </li>
 
-                        <!-- Absensi Dropdown -->
-                        <li
-                            class="nav-item {{ Request::is('admin/absensi-kelas') || Request::is('admin/absensi-kampus') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon bi bi-card-checklist"></i>
-                                <p>
-                                    Absensi
-                                    <i class="nav-arrow bi bi-chevron-right"></i>
-                                </p>
+                        <!-- Absensi Kelas Menu Item -->
+                        <li class="nav-item">
+                            <a href="{{ url('/admin/absensi-kelas') }}"
+                                class="nav-link {{ Request::is('admin/absensi-kelas') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-journal-check"></i> <!-- Icon for Absensi Kelas -->
+                                <p>Absensi Kelas</p>
                             </a>
-                            <ul class="nav nav-treeview">
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/absensi-kelas') }}"
-                                        class="nav-link {{ Request::is('admin/absensi-kelas') ? 'active' : '' }}">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Absensi Kelas</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ url('/admin/absensi-kampus') }}"
-                                        class="nav-link {{ Request::is('admin/absensi-kampus') ? 'active' : '' }}">
-                                        <i class="nav-icon bi bi-circle"></i>
-                                        <p>Absensi Kampus</p>
-                                    </a>
-                                </li>
-                            </ul>
+                        </li>
+
+                        <!-- Absensi Kampus Menu Item -->
+                        <li class="nav-item">
+                            <a href="{{ url('/admin/absensi-kampus') }}"
+                                class="nav-link {{ Request::is('admin/absensi-kampus') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-building"></i> <!-- Icon for Absensi Kampus -->
+                                <p>Absensi Kampus</p>
+                            </a>
                         </li>
 
                         <!-- Pelanggaran Link -->

@@ -1,4 +1,4 @@
-@extends('layouts.sidebar.sidebar_admin')
+@extends('layouts.sidebar_admin')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
