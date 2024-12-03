@@ -43,5 +43,50 @@
   </p>
 @endif
   </div>
+
+  <!-- Prestasi Section -->
+  <div class="bg-white shadow-md rounded-lg p-6 mt-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Prestasi</h1>
+    <p class="text-gray-600 mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+    <form id="filterPrestasi" method="GET" action="{{ route('home') }}" class="mb-4 space-y-4">
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Filter by:</label>
+        <input type="radio" id="tahun" name="waktu" value="tahun" checked>
+        <label for="tahun">Tahun</label><br>
+        <input type="radio" id="semester" name="waktu" value="semester">
+        <label for="semester">Semester</label>
+      </div>
+    </form>
+    <canvas id="prestasiTahun"></canvas>
+    <canvas id="prestasiSemester" style="display: none;"></canvas>
+  </div>
+
+  <!-- Kegiatan Luar Kampus Section -->
+  <div class="bg-white shadow-md rounded-lg p-6 mt-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus</h1>
+    <div class="space-y-4">
+      <h5 class="font-bold text-gray-700">1. MBKM</h5>
+      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+      <h5 class="font-bold text-gray-700">2. IISMA</h5>
+      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+      <h5 class="font-bold text-gray-700">3. Kerja Praktik</h5>
+      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+      <h5 class="font-bold text-gray-700">4. Studi Independent</h5>
+      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+
+      <h5 class="font-bold text-gray-700">5. Pertukaran Pelajar</h5>
+      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+    <canvas id="jlhMahasiswaKegiatanChart"></canvas>
+  </div>
 </div>
 @endsection
+
+@push('scripts')
+  <script>
+    // Include your chart initialization scripts here
+  </script>
+@endpush
