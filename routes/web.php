@@ -22,3 +22,4 @@ Route::get('/client/log', [LogController::class, 'index'])->name('client.log.ind
 Route::get('/client/absensi-kelas', [AbsensiKelasController::class, 'index'])->name('client.absensi-kelas.index');
 Route::get('/client/home', [HomeController::class, 'index'])->name('client.home.index');
 Route::get('/client/pelanggaran', [PelanggaranController::class, 'index'])->name('client.pelanggaran.index');
+
