@@ -28,16 +28,12 @@ Route::get('/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama
 Route::middleware('auth')->group(function () {
     // Home route
     Route::get('/admin/home', [HomeController::class, 'index'])->name('home');
-
     // Absensi Kelas
     Route::get('/admin/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas');
-
     // Log Mahasiswa
     Route::get('/admin/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa');
-
     // Absensi Asrama
     Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama');
-
     // Pelanggaran
     Route::prefix('admin')->group(function () {
         Route::get('/pelanggaran', function () {
