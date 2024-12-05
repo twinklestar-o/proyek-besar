@@ -154,7 +154,8 @@
 
                         <!-- Home Link -->
                         <li class="nav-item">
-                            <a href="{{ url('/home') }}" class="nav-link {{ Request::is('/') ? 'active' : '' }}">
+                            <a href="{{ url('/admin/home') }}"
+                                class="nav-link {{ Request::is('admin/home') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-house"></i>
                                 <p>Home</p>
                             </a>
@@ -178,19 +179,19 @@
                             </a>
                         </li>
 
-                        <!-- Absensi Kampus Menu Item -->
+                        <!-- Absensi Asrama Menu Item -->
                         <li class="nav-item">
-                            <a href="{{ url('/admin/absensi-kampus') }}"
-                                class="nav-link {{ Request::is('admin/absensi-kampus') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-building"></i> <!-- Icon for Absensi Kampus -->
-                                <p>Absensi Kampus</p>
+                            <a href="{{ url('/admin/absensi-asrama') }}"
+                                class="nav-link {{ Request::is('admin/absensi-asrama') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-building"></i> <!-- Icon for Absensi Asrama -->
+                                <p>Absensi Asrama</p>
                             </a>
                         </li>
 
                         <!-- Pelanggaran Link -->
                         <li class="nav-item">
                             <a href="{{ url('/admin/pelanggaran') }}"
-                                class="nav-link {{ Request::is('admin/pelanggaran') ? 'active' : '' }}">
+                                class="nav-link {{ Request::is('/admin/pelanggaran') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-exclamation-triangle"></i>
                                 <p>Pelanggaran</p>
                             </a>

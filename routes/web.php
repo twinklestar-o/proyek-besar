@@ -3,35 +3,43 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AbsensiKelasController;
+use App\Http\Controllers\LogController;
+use App\Http\Controllers\AbsensiAsramaController;
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Redirect root to home
 Route::get('/', function () {
     return redirect('/home');
 });
 
-// Home route (protected by 'auth' middleware)
+// route for all users
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas');
+Route::get('/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa');
+Route::get('/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama');
+
+
+// route for authenticated users
 Route::middleware('auth')->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    // Home route
+    Route::get('/admin/home', [HomeController::class, 'index'])->name('home');
 
-    // Admin routes
+    // Absensi Kelas
+    Route::get('/admin/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas');
+
+    // Log Mahasiswa
+    Route::get('/admin/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa');
+
+    // Absensi Asrama
+    Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama');
+
+    // Pelanggaran
     Route::prefix('admin')->group(function () {
-
-        Route::get('/absensi-kampus', function () {
-            return view('app/absensi_kampus');
-        })->name('admin.absensi_kampus');
-
-        Route::get('/absensi-kelas', function () {
-            return view('app/absensi_kelas');
-        })->name('admin.absensi_kelas');
-
-        Route::get('/log', function () {
-            return view('app/log');
-        })->name('admin.log');
-
         Route::get('/pelanggaran', function () {
             return view('app/pelanggaran');
         })->name('admin.pelanggaran');

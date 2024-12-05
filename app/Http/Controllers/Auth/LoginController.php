@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
 
@@ -71,14 +70,13 @@ class LoginController extends Controller
                 session()->flash('warning', 'Logged in, but an error occurred while contacting external API.');
             }
 
-            return redirect()->intended('/home');
+            return redirect()->intended('/admin/home');
         }
 
         return back()->withErrors([
             'username' => 'The provided credentials do not match our records.',
         ]);
     }
-
 
     public function logout()
     {

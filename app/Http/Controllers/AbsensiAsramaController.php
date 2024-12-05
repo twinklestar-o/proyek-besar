@@ -6,28 +6,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
-class AbsensiKelasController extends Controller
+class AbsensiAsramaController extends Controller
 {
-    public function getTotalKehadiran(Request $request)
+    public function getAbsensiAsrama(Request $request)
     {
         // Initialize data as null
         $data = null;
 
         // Check if the form has been submitted
-        if ($request->has('kode_mk') && $request->has('id_kur')) {
-            // Validate input parameters
+        if ($request->has('id_asrama')) {
+            // Validate the request parameters
             $request->validate([
-                'kode_mk' => 'required|string',
-                'id_kur' => 'required|string',
+                'id_asrama' => 'required|string',
                 'start_time' => 'nullable|date',
                 'end_time' => 'nullable|date',
-                'minggu_ke' => 'nullable|integer',
                 'day' => 'nullable|integer|min:1|max:31',
                 'month' => 'nullable|integer|min:1|max:12',
-                'year' => 'nullable|integer',
+                'year' => 'nullable|integer|min:2000|max:2099',
             ]);
 
-            // Fetch API token from session
+            // Get the API token from the session
             $apiToken = session('api_token');
             if (!$apiToken) {
                 $apiToken = $this->getApiToken();
@@ -35,22 +33,20 @@ class AbsensiKelasController extends Controller
 
             if ($apiToken) {
                 try {
-                    // Build query parameters
+                    // Build the query parameters
                     $queryParams = array_filter([
-                        'kode_mk' => $request->kode_mk,
-                        'id_kur' => $request->id_kur,
+                        'id_asrama' => $request->id_asrama,
                         'start_time' => $request->start_time,
                         'end_time' => $request->end_time,
-                        'minggu_ke' => $request->minggu_ke,
                         'day' => $request->day,
                         'month' => $request->month,
                         'year' => $request->year,
                     ]);
 
-                    // Send request to external API
+                    // Send the request to the external API
                     $response = Http::withToken($apiToken)
                         ->withOptions(['verify' => false])
-                        ->get('https://cis-dev.del.ac.id/api/statistik-api/get-total-kehadiran-mhs', $queryParams);
+                        ->get('https://cis-dev.del.ac.id/api/statistik-api/get-total-absensi-by-asrama', $queryParams);
 
                     if ($response->successful()) {
                         $data = $response->json();
@@ -58,16 +54,16 @@ class AbsensiKelasController extends Controller
                         Log::warning('API request failed.', ['status' => $response->status()]);
                     }
 
-                    Log::info('AbsensiKelas API response:', ['response' => $data]);
+                    Log::info('Absensi Asrama API response:', ['response' => $data]);
                 } catch (\Exception $e) {
-                    Log::error('Error fetching AbsensiKelas data:', ['message' => $e->getMessage()]);
+                    Log::error('Error fetching Absensi Asrama data:', ['message' => $e->getMessage()]);
                     // Do not throw exception, just log and proceed
                 }
             }
         }
 
         // Return the view with the data (even if data is null)
-        return view('app.absensi_kelas', compact('data'));
+        return view('app.absensi_asrama', compact('data'));
     }
 
     protected function getApiToken()

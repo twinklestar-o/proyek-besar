@@ -5,35 +5,39 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $apiToken = session('api_token');
-        $angkatan = $request->get('angkatan', ''); // Get angkatan filter
-        $prodi = $request->get('prodi', '');       // Get prodi filter
-
-        if (!$apiToken) {
-            $apiToken = $this->getApiToken();
-        }
+        $apiToken = $this->getValidApiToken();
+        $angkatan = $request->get('angkatan', '');
+        $prodi = $request->get('prodi', '');
 
         $totalMahasiswaAktif = null;
-        $prodiList = ['Informatika', 'Sistem Informasi', 'Teknik Elektro', 'Manajemen Rekayasa']; // Example list, replace with actual data
+        $prodiList = ['Informatika', 'Sistem Informasi', 'Teknik Elektro', 'Manajemen Rekayasa'];
 
         if ($apiToken) {
             try {
-                $response = Http::withToken($apiToken)
-                    ->withOptions(['verify' => false])
-                    ->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
-                        'angkatan' => $angkatan,
-                        'prodi' => $prodi,
-                    ]);
+                // Build cache key based on filters
+                $cacheKey = 'totalMahasiswaAktif_' . md5($angkatan . '_' . $prodi);
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $totalMahasiswaAktif = $data['total'] ?? null;
-                }
+                // Try to get data from cache
+                $totalMahasiswaAktif = Cache::remember($cacheKey, 300, function () use ($apiToken, $angkatan, $prodi) {
+                    $response = Http::withToken($apiToken)
+                        ->withOptions(['verify' => false, 'timeout' => 5])
+                        ->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                            'angkatan' => $angkatan,
+                            'prodi' => $prodi,
+                        ]);
+
+                    if ($response->successful()) {
+                        $data = $response->json();
+                        return $data['total'] ?? null;
+                    }
+                    return null;
+                });
             } catch (\Exception $e) {
                 Log::error('API Error:', ['message' => $e->getMessage()]);
             }
@@ -42,12 +46,24 @@ class HomeController extends Controller
         return view('app.home', compact('totalMahasiswaAktif', 'prodiList'));
     }
 
+    protected function getValidApiToken()
+    {
+        $apiToken = session('api_token');
+        $tokenObtainedAt = session('api_token_obtained_at');
+
+        // Check if token is older than 55 minutes
+        if (!$apiToken || !$tokenObtainedAt || now()->diffInMinutes($tokenObtainedAt) >= 55) {
+            $apiToken = $this->getApiToken();
+        }
+
+        return $apiToken;
+    }
 
     protected function getApiToken()
     {
         try {
             Log::info('Attempting API login...');
-            $response = Http::withOptions(['verify' => false])
+            $response = Http::withOptions(['verify' => false, 'timeout' => 5])
                 ->post('https://cis-dev.del.ac.id/api/auth/login', [
                     'username' => 'johannes',
                     'password' => 'Del@2022',
@@ -58,7 +74,10 @@ class HomeController extends Controller
                 $apiToken = $data['token'] ?? null;
 
                 if ($apiToken) {
-                    session(['api_token' => $apiToken]); // Store the token in session
+                    session([
+                        'api_token' => $apiToken,
+                        'api_token_obtained_at' => now(),
+                    ]);
                     Log::info('API login successful. Token stored.');
                     return $apiToken;
                 }
