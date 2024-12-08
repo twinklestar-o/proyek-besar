@@ -48,16 +48,33 @@ class HomeController extends Controller
 
     protected function getValidApiToken()
     {
-        $apiToken = session('api_token');
-        $tokenObtainedAt = session('api_token_obtained_at');
+        try {
+            Log::info('Attempting API login directly in getValidApiToken...');
+            $response = Http::withOptions(['verify' => false, 'timeout' => 5])
+                ->post('https://cis-dev.del.ac.id/api/auth/login', [
+                    'username' => 'johannes',
+                    'password' => 'Del@2022',
+                ]);
 
-        // Check if token is older than 55 minutes
-        if (!$apiToken || !$tokenObtainedAt || now()->diffInMinutes($tokenObtainedAt) >= 55) {
-            $apiToken = $this->getApiToken();
+            if ($response->successful()) {
+                $data = $response->json();
+                $apiToken = $data['token'] ?? null;
+
+                if ($apiToken) {
+                    Log::info('API login successful in getValidApiToken.');
+                    return $apiToken;
+                }
+            }
+
+            Log::warning('API login failed in getValidApiToken.', ['status' => $response->status()]);
+        } catch (\Exception $e) {
+            Log::error('Error while fetching API token in getValidApiToken:', ['message' => $e->getMessage()]);
         }
 
-        return $apiToken;
+        return null;
     }
+
+
 
     protected function getApiToken()
     {
