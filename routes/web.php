@@ -18,22 +18,22 @@ Route::get('/', function () {
 });
 
 // route for all users
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::get('/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas');
-Route::get('/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa');
-Route::get('/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama');
+Route::get('/home', [HomeController::class, 'index'])->name('home.public');
+Route::get('/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas.public');
+Route::get('/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa.public');
+Route::get('/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama.public');
 
 
 // route for authenticated users
 Route::middleware('auth')->group(function () {
     // Home route
-    Route::get('/admin/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/admin/home', [HomeController::class, 'index'])->name('home.auth');
     // Absensi Kelas
-    Route::get('/admin/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas');
+    Route::get('/admin/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas.auth');
     // Log Mahasiswa
-    Route::get('/admin/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa');
+    Route::get('/admin/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa.auth');
     // Absensi Asrama
-    Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama');
+    Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama.auth');
     // Pelanggaran
     Route::prefix('admin')->group(function () {
         Route::get('/pelanggaran', function () {

@@ -5,7 +5,8 @@
   <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Kelas</h1>
 
   <!-- Filter Form -->
-  <form id="filterForm" method="GET" action="{{ route('absensi.kelas') }}" class="mb-4 space-y-4">
+  <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'absens.kelas.auth' : 'absensi.kelas.public') }}"
+    class="mb-4 space-y-4">
     <!-- Kode MK -->
     <div>
       <label for="kode_mk" class="block text-gray-700 font-semibold mb-2">Kode MK</label>

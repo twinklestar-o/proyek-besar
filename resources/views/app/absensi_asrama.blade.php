@@ -5,7 +5,8 @@
   <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Asrama</h1>
 
   <!-- Filter Form -->
-  <form id="filterForm" method="GET" action="{{ route('absensi.asrama') }}" class="mb-4 space-y-4">
+  <form id="filterForm" method="GET"
+    action="{{ route(Auth::check() ? 'absensi.asrama.auth' : 'absensi.asrama.public') }}" class="mb-4 space-y-4">
     <div>
       <label for="id_asrama" class="block text-gray-700 font-semibold mb-2">Pilih Asrama</label>
       <select name="id_asrama" id="id_asrama"

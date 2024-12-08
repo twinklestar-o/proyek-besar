@@ -5,7 +5,8 @@
   <h1 class="text-2xl font-bold text-gray-800 mb-4">Log Mahasiswa</h1>
 
   <!-- Filter Form -->
-  <form id="filterForm" method="GET" action="{{ route('log.mahasiswa') }}" class="mb-4 space-y-4">
+  <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'log.mahasiswa.auth' : 'log.mahasiswa.public') }}"
+    class="mb-4 space-y-4">
     <!-- Start Masuk -->
     <div>
       <label for="start_masuk" class="block text-gray-700 font-semibold mb-2">Start Masuk</label>

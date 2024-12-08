@@ -6,7 +6,8 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Total Mahasiswa Aktif</h1>
 
     <!-- Filter form for angkatan and prodi -->
-    <form id="filterForm" method="GET" action="{{ route('home') }}" class="mb-4 space-y-4">
+    <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
+      class="mb-4 space-y-4">
 
       <!-- Text input for angkatan -->
       <div>
@@ -54,7 +55,8 @@
   <div class="bg-white shadow-md rounded-lg p-6 mt-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Prestasi</h1>
     <p class="text-gray-600 mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-    <form id="filterPrestasi" method="GET" action="{{ route('home') }}" class="mb-4 space-y-4">
+    <form id="filterPrestasi" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
+      class="mb-4 space-y-4">
       <div>
         <label class="block text-gray-700 font-semibold mb-2">Filter by:</label>
         <input type="radio" id="tahun" name="waktu" value="tahun" checked>

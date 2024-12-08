@@ -73,39 +73,4 @@ class HomeController extends Controller
 
         return null;
     }
-
-
-
-    protected function getApiToken()
-    {
-        try {
-            Log::info('Attempting API login...');
-            $response = Http::withOptions(['verify' => false, 'timeout' => 5])
-                ->post('https://cis-dev.del.ac.id/api/auth/login', [
-                    'username' => 'johannes',
-                    'password' => 'Del@2022',
-                ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                $apiToken = $data['token'] ?? null;
-
-                if ($apiToken) {
-                    session([
-                        'api_token' => $apiToken,
-                        'api_token_obtained_at' => now(),
-                    ]);
-                    Log::info('API login successful. Token stored.');
-                    return $apiToken;
-                }
-            }
-
-            Log::warning('API login failed.', ['status' => $response->status()]);
-        } catch (\Exception $e) {
-            Log::error('API Login Error:', ['message' => $e->getMessage()]);
-        }
-
-        Log::error('Unable to retrieve API token.');
-        return null;
-    }
 }
