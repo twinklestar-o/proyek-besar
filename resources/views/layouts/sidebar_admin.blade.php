@@ -83,16 +83,20 @@
                     <!--begin::User Menu Dropdown-->
                     <li class="nav-item dropdown user-menu">
 
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
+                            style="gap: 10px;">
                             <img src="https://pkm.sman1balige.delcom.org/img/sis/user/photo-1-037d6036-3485-4e1c-8952-838d475f016f.jpg"
-                                class="user-image rounded-circle shadow" alt="Photo Profile">
-                            <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+                                class="user-image rounded-circle shadow" alt="Photo Profile"
+                                style="width: 40px; height: 40px; object-fit: cover;">
+                            <span class="d-none d-md-inline" style="text-align: center;">{{ Auth::user()->name }}</span>
                         </a>
+
                         <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                             <!--begin::User Image-->
-                            <li class="user-header text-bg-primary">
+                            <li class="user-header text-bg-primary"
+                                style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                                 <img src="https://pkm.sman1balige.delcom.org/img/sis/user/photo-1-037d6036-3485-4e1c-8952-838d475f016f.jpg"
-                                    class="rounded-circle shadow" alt="Photo Profile">
+                                    class="rounded-circle shadow" alt="Photo Profile" style="margin-bottom: 10px;">
                                 <p>
                                     <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                                     <small>Role: Admin</small>
