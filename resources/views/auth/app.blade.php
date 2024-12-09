@@ -5,17 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'Application')</title>
+  <!-- Tailwind CSS CDN -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Include any additional CSS if necessary -->
 </head>
 
-<body>
-  @if(Auth::check()) <!-- Check if the user is authenticated -->
+<body class="flex flex-col min-h-screen">
+  @if(Auth::check())
     @include('layouts.sidebar_admin') <!-- Admin layout -->
   @else
-    @include('layouts.header') <!-- Header is now completely handled in header.blade.php -->
-    <div class="layout flex">
+    @include('layouts.header') <!-- Header is handled in header.blade.php -->
+    <div class="flex flex-1">
     @include('layouts.sidebar_user') <!-- Guest/unauthenticated layout -->
-    <main class="content flex-1 p-4 bg-white">
+    <main class="flex-1 p-4 bg-white overflow-auto">
       @yield('content')
     </main>
     </div>
