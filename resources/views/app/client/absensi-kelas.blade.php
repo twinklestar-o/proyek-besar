@@ -67,7 +67,7 @@
   <!-- Main Content -->
   <main class="pl-56 mr-5 pt-10">
       <div>
-          <h1 class="text-2xl font-bold mb-1">Pelanggaran</h1>
+          <h1 class="text-2xl font-bold mb-1">Absensi Kelas</h1>
           <p class="mb-1">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo eveniet, tenetur saepe ullam doloremque tempora, incidunt natus eligendi id quaerat eum cumque nisi temporibus molestias quibusdam officiis! Eius, odit dicta!
           </p>
