@@ -14,43 +14,69 @@ class HomeController extends Controller
         $angkatan = $request->get('angkatan', '');
         $prodi = $request->get('prodi', '');
         $totalMahasiswaAktif = null;
-        $prodiList = ['Informatika', 'Sistem Informasi', 'Teknik Elektro', 'Manajemen Rekayasa'];
 
-        // Check if API token exists in session
+        // Updated prodiList with IDs and names
+        $prodiList = [
+            1 => 'D3 Teknologi Informasi',
+            3 => 'D3 Teknologi Komputer',
+            4 => 'STr Teknologi Rekayasa Perangkat Lunak',
+            6 => 'S1 Informatika',
+            7 => 'S1 Teknik Elektro',
+            8 => 'S1 Teknik Bioproses',
+            9 => 'S1 Sistem Informasi',
+            10 => 'S1 Manajemen Rekayasa',
+            16 => 'S1 Teknik Metalurgi',
+        ];
+
+        // Retrieve the API token from session or fetch a new one
         $apiToken = session('api_token') ?? $this->getApiToken();
 
-        if ($apiToken) {
-            try {
-                $cacheKey = 'totalMahasiswaAktif_' . md5($angkatan . '_' . $prodi);
-
-                $totalMahasiswaAktif = Cache::remember($cacheKey, 300, function () use ($apiToken, $angkatan, $prodi) {
-                    $client = new Client(['verify' => false, 'timeout' => 10]);
-
-                    $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
-                        'headers' => [
-                            'Authorization' => "Bearer $apiToken",
-                        ],
-                        'query' => [
-                            'angkatan' => $angkatan,
-                            'prodi' => $prodi,
-                        ],
-                    ]);
-
-                    if ($response->getStatusCode() === 200) {
-                        $data = json_decode($response->getBody(), true);
-                        return $data['total'] ?? null;
-                    }
-
-                    return null;
-                });
-            } catch (\Exception $e) {
-                Log::error('Error fetching data:', ['message' => $e->getMessage()]);
-            }
-        } else {
+        if (!$apiToken) {
             Log::error('Failed to obtain API token.');
+            $errors = ['Unable to authenticate with the API. Please try again later.'];
+            return view('app.home', compact('totalMahasiswaAktif', 'prodiList', 'errors'));
         }
 
-        return view('app.home', compact('totalMahasiswaAktif', 'prodiList'));
+        try {
+            $cacheKey = 'totalMahasiswaAktif_' . md5($angkatan . '_' . $prodi);
+
+            $totalMahasiswaAktif = Cache::remember($cacheKey, 300, function () use ($apiToken, $angkatan, $prodi) {
+                $client = new Client(['verify' => false, 'timeout' => 10]);
+
+                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                    'headers' => [
+                        'Authorization' => "Bearer $apiToken",
+                    ],
+                    'query' => [
+                        'angkatan' => $angkatan,
+                        'prodi' => $prodi,
+                    ],
+                ]);
+
+                if ($response->getStatusCode() === 200) {
+                    $data = json_decode($response->getBody(), true);
+                    return $data['total'] ?? null;
+                }
+
+                Log::warning('Unexpected response from API.', ['status' => $response->getStatusCode()]);
+                return null;
+            });
+        } catch (\Exception $e) {
+            if ($e->getCode() === 401) {
+                Log::warning('Token expired, attempting to refresh...');
+                session()->forget('api_token');
+                $apiToken = $this->getApiToken();
+
+                if ($apiToken) {
+                    return $this->index($request);
+                }
+            }
+
+            Log::error('Error fetching data from API:', ['message' => $e->getMessage()]);
+        }
+
+        $errors = ['Unable to fetch data from the API. Please try again later.'];
+        return view('app.home', compact('totalMahasiswaAktif', 'prodiList', 'errors'));
     }
 
     protected function getApiToken()

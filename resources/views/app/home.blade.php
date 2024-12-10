@@ -12,8 +12,10 @@
 
       <!-- Text input for angkatan -->
       <div>
-        <label for="angkatan" class="block text-gray-700 font-semibold mb-2">Filter by Angkatan:</label>
-        <input type="text" name="angkatan" id="angkatan" value="{{ request('angkatan') }}" placeholder="Enter Angkatan"
+        <label for="angkatan" class="block text-gray-700 font-semibold mb-2">Filter by Angkatan (Kosongkan untuk semua
+          angkatan):</label>
+        <input type="text" name="angkatan" id="angkatan" value="{{ request('angkatan') }}"
+          placeholder="Masukkan Angkatan"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
       </div>
 
@@ -23,9 +25,9 @@
         <select name="prodi" id="prodi"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Semua Prodi</option>
-          @foreach($prodiList as $prodi)
-        <option value="{{ $prodi }}" {{ request('prodi') == $prodi ? 'selected' : '' }}>
-        {{ $prodi }}
+          @foreach($prodiList as $id => $name)
+        <option value="{{ $id }}" {{ request('prodi') == $id ? 'selected' : '' }}>
+        {{ $name }}
         </option>
       @endforeach
         </select>
@@ -42,11 +44,11 @@
 
     <!-- Display the data -->
     @if(isset($totalMahasiswaAktif))
-    <p class="text-lg text-green-600 font-semibold">
+    <p class="text-lg text-green-600 font-semibold mt-4">
       Total Mahasiswa Aktif: {{ $totalMahasiswaAktif }}
     </p>
   @else
-  <p class="text-lg text-red-500 font-semibold">
+  <p class="text-lg text-red-500 font-semibold mt-4">
     Data tidak tersedia.
   </p>
 @endif
@@ -100,27 +102,29 @@
 
 @push('scripts')
   <script>
-    // Initialize chart for Total Mahasiswa Aktif
-    const ctxTotalMahasiswaAktif = document.getElementById('totalMahasiswaAktifChart').getContext('2d');
-    const totalMahasiswaAktifChart = new Chart(ctxTotalMahasiswaAktif, {
-    type: 'bar',
-    data: {
-      labels: @json($angkatanList ?? []),
+    document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('totalMahasiswaAktifChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+      labels: ['Mahasiswa Aktif'], // Bisa diperbarui sesuai data
       datasets: [{
-      label: 'Jumlah Mahasiswa',
-      data: @json($mahasiswaPerAngkatan ?? []),
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1
+        label: 'Total Mahasiswa Aktif',
+        data: ['{{ $totalMahasiswaAktif ?? 0 }}'],
+        backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+        borderColor: ['rgba(75, 192, 192, 1)'],
+        borderWidth: 1
       }]
-    },
-    options: {
+      },
+      options: {
       scales: {
-      y: {
+        y: {
         beginAtZero: true
+        }
       }
       }
-    }
+    });
     });
   </script>
+
 @endpush
