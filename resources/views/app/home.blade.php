@@ -37,7 +37,7 @@
       <div>
         <button type="submit"
           class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
-          Filter Data
+          Ambil Data
         </button>
       </div>
     </form>
