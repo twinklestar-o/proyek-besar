@@ -88,7 +88,7 @@ class LogController extends Controller
         try {
             Log::info('Attempting API login...');
             $response = Http::withOptions(['verify' => false, 'timeout' => 5])
-                ->post('https://cis-dev.del.ac.id/api/auth/login', [
+                ->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
                     'username' => 'johannes',
                     'password' => 'Del@2022',
                 ]);

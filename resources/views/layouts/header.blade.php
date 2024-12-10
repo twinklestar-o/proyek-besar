@@ -8,7 +8,7 @@
   </div>
 
   <!-- Right side: Links -->
-  <nav class="flex space-x-4">
+  <nav class="flex space-x-4 px-4">
     <a href="/contacts" class="text-white text-lg hover:underline">Contacts</a>
     <a href="/about" class="text-white text-lg hover:underline">About</a>
   </nav>
