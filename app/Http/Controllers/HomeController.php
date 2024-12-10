@@ -41,7 +41,7 @@ class HomeController extends Controller
             $cacheKey = 'totalMahasiswaAktif_' . md5($angkatan . '_' . $prodi);
 
             $totalMahasiswaAktif = Cache::remember($cacheKey, 300, function () use ($apiToken, $angkatan, $prodi) {
-                $client = new Client(['verify' => false, 'timeout' => 10]);
+                $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 60]);
 
                 $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
                     'headers' => [
@@ -83,7 +83,7 @@ class HomeController extends Controller
     {
         try {
             Log::info('Attempting API login...');
-            $client = new Client(['verify' => false, 'timeout' => 10]);
+            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
 
             $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
                 'form_params' => [ // Sending form-data
