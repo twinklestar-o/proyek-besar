@@ -53,40 +53,82 @@
       <div>
         <button type="submit"
           class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
-          Ambil Data
+          Fetch Data
         </button>
       </div>
     </form>
 
     <!-- Display Data -->
-    <div class="mt-4">
-      @if(isset($data) && isset($data['result']) && $data['result'] == "OK")
+    <div class="flex flex-row">
+      <div class="mt-4">
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Asrama Summary</h2>
+        @if(isset($data) && isset($data['result']) && $data['result'] == "OK")
       <p class="text-lg text-green-600 font-semibold">Jumlah Absen: {{ $data['data']['jumlah_absen'] ?? '0' }}</p>
       <p class="text-lg text-green-600 font-semibold">Jumlah Izin: {{ $data['data']['jumlah_izin'] ?? '0' }}</p>
       <p class="text-lg text-green-600 font-semibold">Jumlah Sakit: {{ $data['data']['jumlah_sakit'] ?? '0' }}</p>
     @else
-      <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
-    @endif
+    <p class="text-lg text-red-500 font-semibold">Data tidak tersedia.</p>
+  @endif
+      </div>
+      <div class="sm:w-full d-flex content-center w-8">
+        <canvas id="absensiAsramaChart"></canvas>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const asramaDropdown = document.getElementById('id_asrama');
-    const warningMessage = document.getElementById('warning-message');
+  document.addEventListener("DOMContentLoaded", function () {
+    const barColors = ["royalblue", "royalblue", "royalblue"];
+    const type = ["Absen", "Izin", "Sakit"];
 
-    // Listen for changes in the dropdown
-    asramaDropdown.addEventListener('change', function () {
-      if (asramaDropdown.value) {
-        // Hide the warning message when a value is selected
-        warningMessage.classList.add('hidden');
-      } else {
-        // Show the warning message when no value is selected
-        warningMessage.classList.remove('hidden');
+    function updateChart() {
+      const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
+      const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
+      const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
+      const jlhAbsensi = [Absen, Izin, Sakit];
+
+      const maxValue = Math.max(...jlhAbsensi);
+      const gap = maxValue;
+      const yMax = maxValue + gap;
+
+      if (absensiAsramaChart) {
+        absensiAsramaChart.destroy();
       }
-    });
+
+      absensiAsramaChart = new Chart("absensiAsramaChart", {
+        type: "bar",
+        data: {
+          labels: type,
+          datasets: [
+            {
+              label: 'Jumlah Mahasiswa yang Absen',
+              backgroundColor: barColors,
+              data: jlhAbsensi
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Jumlah Absensi"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: yMax
+            }
+          }
+        }
+      });
+    }
+
+    let absensiAsramaChart;
+    updateChart();
   });
 </script>
-
 @endsection
