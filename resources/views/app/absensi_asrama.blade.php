@@ -25,21 +25,17 @@
         </select>
 
         <!-- Warning -->
-        @if(empty(request('id_asrama')))
-      <div class="mt-2 flex items-center text-yellow-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M13 16h-1v-4h-1m1-4h.01M21 16v-2a4 4 0 00-3-3.87M7.5 12H3a2 2 0 100 4h4.5m2 0H21a2 2 0 000-4H9.5m0 0L7 16m2-4V8m0 0h1m-1-2h.01" />
-        </svg>
-        <p class="text-sm">Silakan pilih asrama untuk mendapatkan data.</p>
+        <div id="warning-message"
+          class="mt-2 flex items-center text-yellow-600 {{ empty(request('id_asrama')) ? '' : 'hidden' }}">
+          <p class=font-semibold> ! &nbsp;</p>
+          <p class="text-sm">Silakan pilih asrama untuk mendapatkan data.</p>
+        </div>
       </div>
-    @endif
-      </div>
+
 
       <!-- Start Time -->
       <div>
-        <label for="start_time" class="block text-gray-700 font-semibold mb-2">Start Time</label>
+        <label for="start_time" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
         <input type="date" name="start_time" id="start_time"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('start_time') }}">
@@ -47,7 +43,7 @@
 
       <!-- End Time -->
       <div>
-        <label for="end_time" class="block text-gray-700 font-semibold mb-2">End Time</label>
+        <label for="end_time" class="block text-gray-700 font-semibold mb-2">Sampai tanggal : </label>
         <input type="date" name="end_time" id="end_time"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('end_time') }}">
@@ -69,9 +65,28 @@
       <p class="text-lg text-green-600 font-semibold">Jumlah Izin: {{ $data['data']['jumlah_izin'] ?? '0' }}</p>
       <p class="text-lg text-green-600 font-semibold">Jumlah Sakit: {{ $data['data']['jumlah_sakit'] ?? '0' }}</p>
     @else
-      <p class="text-lg text-red-500 font-semibold">Data tidak tersedia.</p>
+      <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
     @endif
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const asramaDropdown = document.getElementById('id_asrama');
+    const warningMessage = document.getElementById('warning-message');
+
+    // Listen for changes in the dropdown
+    asramaDropdown.addEventListener('change', function () {
+      if (asramaDropdown.value) {
+        // Hide the warning message when a value is selected
+        warningMessage.classList.add('hidden');
+      } else {
+        // Show the warning message when no value is selected
+        warningMessage.classList.remove('hidden');
+      }
+    });
+  });
+</script>
+
 @endsection

@@ -17,17 +17,24 @@
           required value="{{ request('kode_mk') }}">
       </div>
 
-      <!-- ID Kurikulum -->
+      <!-- Tahun Kurikulum -->
       <div>
-        <label for="id_kur" class="block text-gray-700 font-semibold mb-2">ID Kurikulum</label>
-        <input type="text" name="id_kur" id="id_kur"
+        <label for="id_kur" class="block text-gray-700 font-semibold mb-2">Tahun Kurikulum</label>
+        <select name="id_kur" id="id_kur"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          required value="{{ request('id_kur') }}">
+          required>
+          <option value="">Pilih Tahun Kurikulum</option>
+          @foreach($tahunKurikulum as $tahun)
+        <option value="{{ $tahun['id_kur'] }}" {{ request('id_kur') == $tahun['id_kur'] ? 'selected' : '' }}>
+        {{ $tahun['id_kur'] }}
+        </option>
+      @endforeach
+        </select>
       </div>
 
       <!-- Start Time -->
       <div>
-        <label for="start_time" class="block text-gray-700 font-semibold mb-2">Start Time</label>
+        <label for="start_time" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
         <input type="date" name="start_time" id="start_time"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('start_time') }}">
@@ -35,42 +42,10 @@
 
       <!-- End Time -->
       <div>
-        <label for="end_time" class="block text-gray-700 font-semibold mb-2">End Time</label>
+        <label for="end_time" class="block text-gray-700 font-semibold mb-2">Sampai tanggal : </label>
         <input type="date" name="end_time" id="end_time"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('end_time') }}">
-      </div>
-
-      <!-- Minggu Ke -->
-      <div>
-        <label for="minggu_ke" class="block text-gray-700 font-semibold mb-2">Minggu Ke</label>
-        <input type="number" name="minggu_ke" id="minggu_ke" min="1"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('minggu_ke') }}">
-      </div>
-
-      <!-- Day -->
-      <div>
-        <label for="day" class="block text-gray-700 font-semibold mb-2">Hari</label>
-        <input type="number" name="day" id="day" min="1" max="31"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('day') }}">
-      </div>
-
-      <!-- Month -->
-      <div>
-        <label for="month" class="block text-gray-700 font-semibold mb-2">Bulan</label>
-        <input type="number" name="month" id="month" min="1" max="12"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('month') }}">
-      </div>
-
-      <!-- Year -->
-      <div>
-        <label for="year" class="block text-gray-700 font-semibold mb-2">Tahun</label>
-        <input type="number" name="year" id="year" min="2000" max="2099"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('year') }}">
       </div>
 
       <!-- Fetch Data Button -->
@@ -117,7 +92,7 @@
       </table>
       </div>
     @else
-      <p class="text-lg text-red-500 font-semibold">Data tidak tersedia.</p>
+      <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
     @endif
     </div>
   </div>

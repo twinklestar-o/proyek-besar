@@ -10,6 +10,12 @@
   }
 @endphp
 
+@php
+  $currentYear = date('Y');
+  $startYear = $currentYear - 6; // Mengambil 7 tahun terakhir termasuk tahun ini
+  $angkatanYears = range($startYear, $currentYear);
+@endphp
+
 <div class="container mx-auto px-4 py-8">
   <!-- Total Mahasiswa Aktif Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8 editable">
@@ -19,18 +25,21 @@
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
       class="mb-4 space-y-4">
 
-      <!-- Text input for angkatan -->
+      <!-- Dropdown for angkatan -->
       <div>
-        <label for="angkatan" class="block text-gray-700 font-semibold mb-2">Filter by Angkatan (Kosongkan untuk semua
-          angkatan):</label>
-        <input type="text" name="angkatan" id="angkatan" value="{{ request('angkatan') }}"
-          placeholder="Masukkan Angkatan"
+        <label for="angkatan" class="block text-gray-700 font-semibold mb-2">Filter by Angkatan :</label>
+        <select name="angkatan" id="angkatan"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
+          <option value="">Semua Angkatan</option>
+          @foreach($angkatanYears as $year)
+        <option value="{{ $year }}" {{ request('angkatan') == $year ? 'selected' : '' }}>{{ $year }}</option>
+      @endforeach
+        </select>
       </div>
 
       <!-- Dropdown for prodi -->
       <div>
-        <label for="prodi" class="block text-gray-700 font-semibold mb-2">Filter by Prodi:</label>
+        <label for="prodi" class="block text-gray-700 font-semibold mb-2">Filter by Prodi :</label>
         <select name="prodi" id="prodi"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Semua Prodi</option>
@@ -58,13 +67,13 @@
     <ul class="text-green-600 font-semibold">
       @if(!empty($dataMahasiswa))
       @foreach($dataMahasiswa as $prodiName => $jumlah)
-      @if($prodiName !== 'total') <!-- Abaikan total saat looping -->
+      @if($prodiName !== 'total') <!-- Abaikan key 'total' saat looping prodi -->
       <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
     @endif
     @endforeach
       <li class="font-semibold text-green-600">Total mahasiswa: {{ $dataMahasiswa['total'] ?? 0 }} mahasiswa</li>
     @else
-      <li class="text-red-500">Data tidak tersedia.</li>
+      <li class="text-red-500">Data belum tersedia.</li>
     @endif
     </ul>
   @elseif(!$angkatan && $prodi)
@@ -90,7 +99,7 @@
   @endforeach
     <li class="font-bold text-green-600">Angkatan total: {{ array_sum($dataMahasiswa) }} mahasiswa</li>
   @else
-  <li class="text-red-500">Data tidak tersedia.</li>
+  <li class="text-red-500">Data belum tersedia.</li>
 @endif
   </ul>
 @elseif($angkatan && $prodi)
@@ -102,7 +111,7 @@
     @if(isset($dataMahasiswa['total']))
     Total Mahasiswa: {{ $dataMahasiswa['total'] }}
   @else
-  <span class="text-red-500">Data tidak tersedia.</span>
+  <span class="text-red-500">Data belum tersedia.</span>
 @endif
   </p>
 @elseif(isset($dataMahasiswa['total']))
@@ -113,7 +122,7 @@
   </p>
 @else
   <!-- Fallback -->
-  <p class="text-red-500">Data tidak tersedia atau tidak dapat diambil.</p>
+  <p class="text-red-500">Data belum tersedia.</p>
 @endif
 
 

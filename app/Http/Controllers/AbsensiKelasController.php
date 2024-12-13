@@ -12,6 +12,7 @@ class AbsensiKelasController extends Controller
     public function getTotalKehadiran(Request $request)
     {
         $data = null;
+        $tahunKurikulum = $this->getTahunKurikulum(); // Panggil fungsi untuk mendapatkan data tahun kurikulum
 
         // Validate and filter input
         if ($request->has('kode_mk') && $request->has('id_kur')) {
@@ -26,16 +27,18 @@ class AbsensiKelasController extends Controller
                 'year' => 'nullable|integer',
             ]);
 
-            // Retrieve or fetch API token
             $apiToken = session('api_token') ?? $this->getApiToken();
 
             if (!$apiToken) {
                 Log::error('Failed to obtain API token.');
-                return view('app.absensi_kelas', ['data' => null, 'errors' => ['Unable to authenticate with the API.']]);
+                return view('app.absensi_kelas', [
+                    'data' => null,
+                    'tahunKurikulum' => $tahunKurikulum,
+                    'errors' => ['Unable to authenticate with the API.']
+                ]);
             }
 
             try {
-                // Build query parameters
                 $queryParams = array_filter([
                     'kode_mk' => $request->kode_mk,
                     'id_kur' => $request->id_kur,
@@ -47,45 +50,55 @@ class AbsensiKelasController extends Controller
                     'year' => $request->year,
                 ]);
 
-                // Cache key based on query parameters
                 $cacheKey = 'absensiKelas_' . md5(json_encode($queryParams));
-
-                // Fetch data from cache or API
                 $data = Cache::remember($cacheKey, 300, function () use ($apiToken, $queryParams) {
                     $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
-
                     $response = $client->get('https://cis-dev.del.ac.id/api/statistik-api/get-total-kehadiran-mhs', [
-                        'headers' => [
-                            'Authorization' => "Bearer $apiToken",
-                        ],
+                        'headers' => ['Authorization' => "Bearer $apiToken"],
                         'query' => $queryParams,
                     ]);
 
-                    if ($response->getStatusCode() === 200) {
-                        return json_decode($response->getBody(), true);
-                    }
-
-                    Log::warning('Unexpected response from API.', ['status' => $response->getStatusCode()]);
-                    return null;
+                    return $response->getStatusCode() === 200
+                        ? json_decode($response->getBody(), true)
+                        : null;
                 });
 
                 Log::info('Absensi Kelas API response:', ['response' => $data]);
             } catch (\Exception $e) {
-                if ($e->getCode() === 401) {
-                    Log::warning('Token expired, attempting to refresh...');
-                    session()->forget('api_token');
-                    $apiToken = $this->getApiToken();
-
-                    if ($apiToken) {
-                        return $this->getTotalKehadiran($request);
-                    }
-                }
-
                 Log::error('Error fetching Absensi Kelas data:', ['message' => $e->getMessage()]);
             }
         }
 
-        return view('app.absensi_kelas', compact('data'));
+        return view('app.absensi_kelas', compact('data', 'tahunKurikulum'));
+    }
+
+    private function getTahunKurikulum()
+    {
+        $tahunKurikulum = [];
+        try {
+            $apiToken = session('api_token') ?? $this->getApiToken();
+
+            if (!$apiToken) {
+                Log::error('Failed to obtain API token.');
+                return [];
+            }
+
+            $client = new Client(['verify' => false, 'timeout' => 10]);
+            $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-tahun-kurikulum', [
+                'headers' => ['Authorization' => "Bearer $apiToken"],
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                $data = json_decode($response->getBody(), true);
+                $tahunKurikulum = $data['data'] ?? [];
+            } else {
+                Log::warning('Unexpected response from Tahun Kurikulum API.', ['status' => $response->getStatusCode()]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching Tahun Kurikulum data:', ['message' => $e->getMessage()]);
+        }
+
+        return $tahunKurikulum;
     }
 
     protected function getApiToken()

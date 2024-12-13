@@ -35,7 +35,7 @@ class HomeController extends Controller
         }
 
         try {
-            $client = new \GuzzleHttp\Client(['verify' => false, 'timeout' => 60]);
+            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 60]);
 
             if (empty($angkatan) && !empty($prodi)) {
                 // Semua angkatan tapi prodi terisi
@@ -44,27 +44,36 @@ class HomeController extends Controller
                 // Semua prodi tapi angkatan diisi
                 $dataMahasiswa = $this->fetchDataByProdi($client, $apiToken, $angkatan, $prodiList);
             } else {
-                // Default, hanya total
-                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
-                    'headers' => [
-                        'Authorization' => "Bearer $apiToken",
-                        'Accept' => 'application/json',
-                    ],
-                    'query' => [
-                        'angkatan' => $angkatan,
-                        'prodi' => $prodi,
-                    ],
-                ]);
+                // Jika $angkatan dan $prodi keduanya kosong (Semua Prodi, Semua Angkatan)
+                $dataMahasiswa = [];
+                $grandTotal = 0;
 
-                $data = json_decode($response->getBody()->getContents(), true);
+                foreach ($prodiList as $prodiId => $prodiName) {
+                    $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                        'headers' => [
+                            'Authorization' => "Bearer $apiToken",
+                            'Accept' => 'application/json',
+                        ],
+                        'query' => [
+                            'angkatan' => '',
+                            'prodi' => $prodiId,
+                        ],
+                    ]);
 
-                if (isset($data['total'])) {
-                    $dataMahasiswa = ['total' => (int) $data['total']];
-                } else {
-                    Log::warning('API response did not contain "total".', ['response' => $data]);
-                    $dataMahasiswa = ['message' => 'Data tidak ditemukan.'];
+                    $data = json_decode($response->getBody()->getContents(), true);
+
+                    if (isset($data['total'])) {
+                        $dataMahasiswa[$prodiName] = (int) $data['total'];
+                        $grandTotal += (int) $data['total'];
+                    } else {
+                        $dataMahasiswa[$prodiName] = 0;
+                    }
                 }
+
+                // Tambahkan total keseluruhan
+                $dataMahasiswa['total'] = $grandTotal;
             }
+
         } catch (\Exception $e) {
             Log::error('Error fetching data from API:', ['message' => $e->getMessage()]);
             $dataMahasiswa = ['message' => 'Terjadi kesalahan saat menghubungi API.'];

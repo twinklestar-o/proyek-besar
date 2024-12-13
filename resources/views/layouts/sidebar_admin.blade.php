@@ -40,6 +40,39 @@
         }
     </style>
 
+    <style>
+        /* Sidebar container with default settings */
+        .app-sidebar {
+            width: 250px;
+            transition: transform 0.3s ease-in-out;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1040;
+            transform: translateX(0);
+            /* Default visible state */
+        }
+
+        /* Sidebar hidden/collapsed state */
+        .app-sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        /* Adjust content layout for collapsed sidebar */
+        .app-wrapper {
+            transition: margin-left 0.3s ease-in-out;
+            margin-left: 250px;
+            /* Default sidebar width */
+        }
+
+        .app-wrapper.sidebar-collapsed {
+            margin-left: 0;
+            /* Adjust margin when sidebar is hidden */
+        }
+    </style>
+
+
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -139,7 +172,7 @@
                         </li>
                         <li class="nav-item">
                             <a href="{{ url('/admin/pelanggaran') }}"
-                                class="nav-link {{ Request::is('/admin/pelanggaran') ? 'active' : '' }}">
+                                class="nav-link {{ Request::is('admin/pelanggaran') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-exclamation-triangle"></i>
                                 <p>Pelanggaran</p>
                             </a>
@@ -286,6 +319,23 @@
         });
 
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarToggleButton = document.querySelector('[data-lte-toggle="sidebar"]');
+            const appWrapper = document.querySelector('.app-wrapper');
+            const sidebar = document.querySelector('.app-sidebar');
+
+            // Add event listener for the toggle button
+            sidebarToggleButton.addEventListener("click", () => {
+                if (sidebar) {
+                    sidebar.classList.toggle("collapsed");
+                    appWrapper.classList.toggle("sidebar-collapsed");
+                }
+            });
+        });
+    </script>
+
 </body>
 
 </html>
