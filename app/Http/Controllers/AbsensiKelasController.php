@@ -94,7 +94,7 @@ class AbsensiKelasController extends Controller
             Log::info('Attempting API login...');
             $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
 
-            $response = $client->post('https://cis-dev.del.ac.id/api/auth/login', [
+            $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
                 'form_params' => [
                     'username' => 'johannes',
                     'password' => 'Del@2022',

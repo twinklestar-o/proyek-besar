@@ -19,7 +19,27 @@
         .note-editable {
             height: 100% !important;
         }
+
+        .floating-edit-btn {
+            position: fixed;
+            top: 60px;
+            /* Distance from the top */
+            right: 20px;
+            /* Distance from the right */
+            z-index: 1000;
+            /* Ensure it's above other elements */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-edit-btn button {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .floating-edit-btn button:hover {
+            transform: scale(1.1);
+        }
     </style>
+
 </head>
 
 <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
@@ -130,8 +150,8 @@
         </aside>
 
         <main class="app-main">
-            <div class="container my-1 text-end">
-                <button id="editButton" class="btn btn-light px-2 py-1 ">
+            <div id="floatingEditButton" class="floating-edit-btn">
+                <button id="editButton" class="btn btn-light px-2 py-1">
                     <i id="editIcon" class="bi bi-pencil" style="color: orange;"></i>
                     <span id="editText" class="ms-2" style="color: orange;">Edit</span>
                 </button>
@@ -192,20 +212,51 @@
             editButton.addEventListener("click", () => {
                 isEditing = !isEditing;
 
-                // Toggle contentEditable for editable elements
+                // Toggle contentEditable untuk elemen yang dapat diedit
                 editableElements.forEach((element) => {
                     element.contentEditable = isEditing;
                     element.style.border = isEditing ? "1px dashed gray" : "none";
                 });
 
-                // Toggle icon and text
+                // Ganti ikon dan teks tombol
                 editIcon.classList.toggle("bi-pencil", !isEditing);
                 editIcon.classList.toggle("bi-check-circle", isEditing);
                 editIcon.style.color = isEditing ? "green" : "orange";
                 editText.textContent = isEditing ? "Done" : "Edit";
                 editText.style.color = isEditing ? "green" : "orange";
+
+                if (!isEditing) {
+                    // Simpan konten yang diperbarui
+                    saveChanges(editableElements);
+                }
             });
+
+            function saveChanges(elements) {
+                const changes = {};
+                elements.forEach((element, index) => {
+                    changes[`element_${index}`] = element.innerHTML; // Gunakan innerHTML untuk menyimpan konten
+                });
+
+                // Kirim data ke server
+                fetch("/save-edits", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                    },
+                    body: JSON.stringify(changes),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                    })
+                    .catch((error) => {
+                        console.error("Error saving changes:", error);
+                        alert("An error occurred while saving changes.");
+                    });
+            }
+
         });
+
     </script>
 
     <script>

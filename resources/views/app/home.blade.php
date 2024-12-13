@@ -1,10 +1,19 @@
 @extends('auth.app')
 
 @section('content')
+@php
+  $filePath = storage_path('app/public/edited_content.json');
+  $editableContent = [];
+
+  if (file_exists($filePath)) {
+    $editableContent = json_decode(file_get_contents($filePath), true);
+  }
+@endphp
+
 <div class="container mx-auto px-4 py-8">
   <!-- Total Mahasiswa Aktif Section -->
-  <div class="bg-white shadow rounded-lg p-6 mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Total Mahasiswa Aktif</h1>
+  <div class="bg-white shadow rounded-lg p-6 mb-8 editable">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4"> Total Mahasiswa Aktif</h1>
 
     <!-- Filter form for angkatan and prodi -->
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
@@ -42,16 +51,78 @@
       </div>
     </form>
 
-    <!-- Display the data -->
-    @if(isset($totalMahasiswaAktif))
-    <p class="text-lg text-green-600 font-semibold mt-4">
-      Total Mahasiswa Aktif: {{ $totalMahasiswaAktif }}
-    </p>
+    <!-- Display Data -->
+    @if(!$angkatan && !$prodi)
+    <!-- Semua Angkatan, Semua Prodi -->
+    <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Semua Prodi</h2>
+    <ul class="text-green-600 font-semibold">
+      @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
+      @foreach($dataMahasiswa as $prodiName => $prodiData)
+      <li class="font-bold text-indigo-600">{{ $prodiName }}</li>
+      <ul>
+      @if(is_array($prodiData))
+      @foreach($prodiData as $angkatanKey => $jumlah)
+      <li>Angkatan {{ $angkatanKey }}: {{ $jumlah }} mahasiswa</li>
+    @endforeach
+      <li class="font-bold text-green-600">Total di Prodi: {{ array_sum($prodiData) }} mahasiswa</li>
+    @else
+      <li class="text-red-500">Data tidak tersedia atau format tidak sesuai.</li>
+    @endif
+      </ul>
+    @endforeach
+    @else
+      <li class="text-red-500">Data tidak tersedia.</li>
+    @endif
+    </ul>
+  @elseif(!$angkatan && $prodi)
+  <!-- Semua Angkatan, Prodi Terisi -->
+  <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Prodi {{ $prodiList[$prodi] }}</h2>
+  <ul class="text-green-600 font-semibold">
+    @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
+    @foreach($dataMahasiswa as $angkatanKey => $jumlah)
+    <li>Angkatan {{ $angkatanKey }}: {{ $jumlah }} mahasiswa</li>
+  @endforeach
+    <li class="font-bold text-green-600">Total di Prodi: {{ array_sum($dataMahasiswa) }} mahasiswa</li>
   @else
-  <p class="text-lg text-red-500 font-semibold mt-4">
-    Data tidak tersedia.
-  </p>
+  <li class="text-red-500">Data tidak tersedia.</li>
 @endif
+  </ul>
+@elseif($angkatan && !$prodi)
+  <!-- Angkatan Diisi, Semua Prodi -->
+  <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Prodi untuk Angkatan {{ $angkatan }}</h2>
+  <ul class="text-green-600 font-semibold">
+    @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
+    @foreach($dataMahasiswa as $prodiName => $jumlah)
+    <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
+  @endforeach
+    <li class="font-bold text-green-600">Angkatan total: {{ array_sum($dataMahasiswa) }} mahasiswa</li>
+  @else
+  <li class="text-red-500">Data tidak tersedia.</li>
+@endif
+  </ul>
+@elseif($angkatan && $prodi)
+  <!-- Kedua Parameter Terisi -->
+  <h2 class="text-lg font-bold">
+    Jumlah Mahasiswa untuk Prodi {{ $prodiList[$prodi] }} Angkatan {{ $angkatan }}
+  </h2>
+  <p class="text-green-600 font-semibold">
+    @if(isset($dataMahasiswa['total']))
+    Total Mahasiswa: {{ $dataMahasiswa['total'] }}
+  @else
+  <span class="text-red-500">Data tidak tersedia.</span>
+@endif
+  </p>
+@elseif(isset($dataMahasiswa['total']))
+  <!-- Default Total Mahasiswa Aktif -->
+  <h2 class="text-lg font-bold">Total Mahasiswa Aktif</h2>
+  <p class="text-green-600 font-semibold">
+    Total Mahasiswa Aktif: {{ $dataMahasiswa['total'] }}
+  </p>
+@else
+  <!-- Fallback -->
+  <p class="text-red-500">Data tidak tersedia atau tidak dapat diambil.</p>
+@endif
+
 
     <!-- Chart for Total Mahasiswa Aktif -->
     <canvas id="totalMahasiswaAktifChart" class="mt-6"></canvas>

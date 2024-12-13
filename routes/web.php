@@ -6,6 +6,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AbsensiKelasController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\AbsensiAsramaController;
+use App\Http\Controllers\PelanggaranController;
+use App\Http\Controllers\ContentController;
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -22,6 +24,9 @@ Route::get('/home', [HomeController::class, 'index'])->name('home.public');
 Route::get('/absensi-kelas', [AbsensiKelasController::class, 'getTotalKehadiran'])->name('absensi.kelas.public');
 Route::get('/log', [LogController::class, 'getLogMahasiswa'])->name('log.mahasiswa.public');
 Route::get('/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama.public');
+Route::get('/pelanggaran', [PelanggaranController::class, 'getPelanggaranByAsrama'])->name('pelanggaran.public');
+
+Route::post('/save-edits', [ContentController::class, 'saveEdits'])->name('save.edits');
 
 
 // route for authenticated users
@@ -35,9 +40,5 @@ Route::middleware('auth')->group(function () {
     // Absensi Asrama
     Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama.auth');
     // Pelanggaran
-    Route::prefix('admin')->group(function () {
-        Route::get('/pelanggaran', function () {
-            return view('app/pelanggaran');
-        })->name('admin.pelanggaran');
-    });
+    Route::get('/admin/pelanggaran', [PelanggaranController::class, 'getPelanggaranByAsrama'])->name('pelanggaran.auth');
 });

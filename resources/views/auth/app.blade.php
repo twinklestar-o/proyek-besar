@@ -9,6 +9,8 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <!-- Include any additional CSS if necessary -->
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
 
 <body class="flex flex-col min-h-screen">

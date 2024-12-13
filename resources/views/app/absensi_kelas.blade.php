@@ -51,7 +51,7 @@
 
       <!-- Day -->
       <div>
-        <label for="day" class="block text-gray-700 font-semibold mb-2">Day</label>
+        <label for="day" class="block text-gray-700 font-semibold mb-2">Hari</label>
         <input type="number" name="day" id="day" min="1" max="31"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('day') }}">
@@ -59,7 +59,7 @@
 
       <!-- Month -->
       <div>
-        <label for="month" class="block text-gray-700 font-semibold mb-2">Month</label>
+        <label for="month" class="block text-gray-700 font-semibold mb-2">Bulan</label>
         <input type="number" name="month" id="month" min="1" max="12"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('month') }}">
@@ -67,7 +67,7 @@
 
       <!-- Year -->
       <div>
-        <label for="year" class="block text-gray-700 font-semibold mb-2">Year</label>
+        <label for="year" class="block text-gray-700 font-semibold mb-2">Tahun</label>
         <input type="number" name="year" id="year" min="2000" max="2099"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           value="{{ request('year') }}">

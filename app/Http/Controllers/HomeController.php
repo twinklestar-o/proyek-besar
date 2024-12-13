@@ -13,9 +13,7 @@ class HomeController extends Controller
     {
         $angkatan = $request->get('angkatan', '');
         $prodi = $request->get('prodi', '');
-        $totalMahasiswaAktif = null;
-
-        // Updated prodiList with IDs and names
+        $dataMahasiswa = [];
         $prodiList = [
             1 => 'D3 Teknologi Informasi',
             3 => 'D3 Teknologi Komputer',
@@ -28,24 +26,32 @@ class HomeController extends Controller
             16 => 'S1 Teknik Metalurgi',
         ];
 
-        // Retrieve the API token from session or fetch a new one
         $apiToken = session('api_token') ?? $this->getApiToken();
 
         if (!$apiToken) {
             Log::error('Failed to obtain API token.');
             $errors = ['Unable to authenticate with the API. Please try again later.'];
-            return view('app.home', compact('totalMahasiswaAktif', 'prodiList', 'errors'));
+            return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi', 'errors'));
         }
 
         try {
-            $cacheKey = 'totalMahasiswaAktif_' . md5($angkatan . '_' . $prodi);
+            $client = new \GuzzleHttp\Client(['verify' => false, 'timeout' => 60]);
 
-            $totalMahasiswaAktif = Cache::remember($cacheKey, 300, function () use ($apiToken, $angkatan, $prodi) {
-                $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 60]);
-
+            if (empty($angkatan) && empty($prodi)) {
+                // Jika angkatan dan prodi kosong, fetch semua prodi dan semua angkatan
+                $dataMahasiswa = $this->fetchAllProdiAllAngkatan($client, $apiToken, $prodiList);
+            } elseif (empty($angkatan) && !empty($prodi)) {
+                // Semua angkatan tapi satu prodi terisi
+                $dataMahasiswa = $this->fetchDataByAngkatan($client, $apiToken, $prodi);
+            } elseif (!empty($angkatan) && empty($prodi)) {
+                // Semua prodi tapi angkatan diisi
+                $dataMahasiswa = $this->fetchDataByProdi($client, $apiToken, $angkatan, $prodiList);
+            } else {
+                // Kedua parameter diisi, atau default total saja.
                 $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
                     'headers' => [
                         'Authorization' => "Bearer $apiToken",
+                        'Accept' => 'application/json',
                     ],
                     'query' => [
                         'angkatan' => $angkatan,
@@ -53,40 +59,137 @@ class HomeController extends Controller
                     ],
                 ]);
 
-                if ($response->getStatusCode() === 200) {
-                    $data = json_decode($response->getBody(), true);
-                    return $data['total'] ?? null;
-                }
+                $data = json_decode($response->getBody()->getContents(), true);
 
-                Log::warning('Unexpected response from API.', ['status' => $response->getStatusCode()]);
-                return null;
-            });
-        } catch (\Exception $e) {
-            if ($e->getCode() === 401) {
-                Log::warning('Token expired, attempting to refresh...');
-                session()->forget('api_token');
-                $apiToken = $this->getApiToken();
-
-                if ($apiToken) {
-                    return $this->index($request);
+                if (isset($data['total'])) {
+                    $dataMahasiswa = ['total' => (int) $data['total']];
+                } else {
+                    Log::warning('API response did not contain "total".', ['response' => $data]);
+                    $dataMahasiswa = ['message' => 'Data tidak ditemukan.'];
                 }
             }
-
+        } catch (\Exception $e) {
             Log::error('Error fetching data from API:', ['message' => $e->getMessage()]);
+            $dataMahasiswa = ['message' => 'Terjadi kesalahan saat menghubungi API.'];
         }
 
-        $errors = ['Unable to fetch data from the API. Please try again later.'];
-        return view('app.home', compact('totalMahasiswaAktif', 'prodiList', 'errors'));
+        return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi'));
     }
+
+    protected function fetchAllProdiAllAngkatan($client, $apiToken, $prodiList)
+    {
+        $currentYear = date('Y');
+        $angkatanRange = range($currentYear - 6, $currentYear);
+        $dataMahasiswa = [];
+
+        foreach ($prodiList as $prodiId => $prodiName) {
+            $dataMahasiswa[$prodiName] = [];
+            foreach ($angkatanRange as $angk) {
+                try {
+                    $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                        'headers' => [
+                            'Authorization' => "Bearer $apiToken",
+                            'Accept' => 'application/json',
+                        ],
+                        'query' => [
+                            'angkatan' => $angk,
+                            'prodi' => $prodiId,
+                        ],
+                    ]);
+
+                    $data = json_decode($response->getBody()->getContents(), true);
+                    if (isset($data['total'])) {
+                        $dataMahasiswa[$prodiName][$angk] = (int) $data['total'];
+                    } else {
+                        Log::warning("No 'total' field for prodi {$prodiName}, angkatan {$angk}.");
+                        $dataMahasiswa[$prodiName][$angk] = 0;
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Error fetching data for prodi {$prodiName}, angkatan {$angk}:", ['message' => $e->getMessage()]);
+                    $dataMahasiswa[$prodiName][$angk] = 0;
+                }
+            }
+        }
+
+        return $dataMahasiswa;
+    }
+
+
+    protected function fetchDataByAngkatan($client, $apiToken, $prodi)
+    {
+        $currentYear = date('Y');
+        $angkatanRange = range($currentYear - 6, $currentYear); // Rentang 7 tahun terakhir
+        $dataMahasiswa = [];
+
+        foreach ($angkatanRange as $angkatan) {
+            try {
+                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                    'headers' => [
+                        'Authorization' => "Bearer $apiToken",
+                        'Accept' => 'application/json',
+                    ],
+                    'query' => [
+                        'angkatan' => $angkatan,
+                        'prodi' => $prodi,
+                    ],
+                ]);
+
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                if (isset($data['total'])) {
+                    $dataMahasiswa[$angkatan] = (int) $data['total'];
+                } else {
+                    Log::warning("No 'total' field in response for angkatan {$angkatan}.");
+                }
+            } catch (\Exception $e) {
+                Log::error("Error fetching data for angkatan {$angkatan}:", ['message' => $e->getMessage()]);
+            }
+        }
+
+        return $dataMahasiswa;
+    }
+
+    protected function fetchDataByProdi($client, $apiToken, $angkatan, $prodiList)
+    {
+        $dataMahasiswa = [];
+
+        foreach ($prodiList as $prodiId => $prodiName) {
+            try {
+                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                    'headers' => [
+                        'Authorization' => "Bearer $apiToken",
+                        'Accept' => 'application/json',
+                    ],
+                    'query' => [
+                        'angkatan' => $angkatan,
+                        'prodi' => $prodiId,
+                    ],
+                ]);
+
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                if (isset($data['total'])) {
+                    $dataMahasiswa[$prodiName] = (int) $data['total'];
+                } else {
+                    Log::warning("No 'total' field in response for prodi {$prodiName}.");
+                }
+            } catch (\Exception $e) {
+                Log::error("Error fetching data for prodi {$prodiName}:", ['message' => $e->getMessage()]);
+            }
+        }
+
+        return $dataMahasiswa;
+    }
+
 
     protected function getApiToken()
     {
         try {
             Log::info('Attempting API login...');
-            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
+            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 60]);
 
             $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
-                'form_params' => [ // Sending form-data
+                'form_params' => [
                     'username' => 'johannes',
                     'password' => 'Del@2022',
                 ],
@@ -95,21 +198,22 @@ class HomeController extends Controller
                 ],
             ]);
 
-            $body = $response->getBody()->getContents();
-            $data = json_decode($body, true);
+            $data = json_decode($response->getBody()->getContents(), true);
 
-            if ($response->getStatusCode() === 200 && isset($data['token'])) {
-                // Store the token in the session
+            if (isset($data['token'])) {
                 session(['api_token' => $data['token']]);
-                Log::info('API login successful, token stored in session.', ['token' => $data['token']]);
+                Log::info('New API token retrieved:', ['token' => $data['token']]);
                 return $data['token'];
             }
 
-            Log::error('API login failed.', ['response' => $data]);
+            Log::error('Failed to retrieve API token.', ['response' => $data]);
         } catch (\Exception $e) {
-            Log::error('Error during API login:', ['message' => $e->getMessage()]);
+            Log::error('Error during API token retrieval:', ['message' => $e->getMessage()]);
         }
 
         return null;
     }
+
+
+
 }
