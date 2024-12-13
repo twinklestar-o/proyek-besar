@@ -53,23 +53,16 @@
 
     <!-- Display Data -->
     @if(!$angkatan && !$prodi)
-    <!-- Semua Angkatan, Semua Prodi -->
-    <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Semua Prodi</h2>
+    <!-- Semua Prodi, Semua Angkatan -->
+    <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan</h2>
     <ul class="text-green-600 font-semibold">
-      @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
-      @foreach($dataMahasiswa as $prodiName => $prodiData)
-      <li class="font-bold text-indigo-600">{{ $prodiName }}</li>
-      <ul>
-      @if(is_array($prodiData))
-      @foreach($prodiData as $angkatanKey => $jumlah)
-      <li>Angkatan {{ $angkatanKey }}: {{ $jumlah }} mahasiswa</li>
-    @endforeach
-      <li class="font-bold text-green-600">Total di Prodi: {{ array_sum($prodiData) }} mahasiswa</li>
-    @else
-      <li class="text-red-500">Data tidak tersedia atau format tidak sesuai.</li>
+      @if(!empty($dataMahasiswa))
+      @foreach($dataMahasiswa as $prodiName => $jumlah)
+      @if($prodiName !== 'total') <!-- Abaikan total saat looping -->
+      <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
     @endif
-      </ul>
     @endforeach
+      <li class="font-semibold text-green-600">Total mahasiswa: {{ $dataMahasiswa['total'] ?? 0 }} mahasiswa</li>
     @else
       <li class="text-red-500">Data tidak tersedia.</li>
     @endif
