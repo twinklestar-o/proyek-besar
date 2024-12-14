@@ -61,13 +61,12 @@
     <!-- Display Data -->
     <div class="flex flex-row">
       <div class="mt-4">
-        <h2 class="text-xl font-bold text-gray-800 mb-2">Asrama Summary</h2>
         @if(isset($data) && isset($data['result']) && $data['result'] == "OK")
       <p class="text-lg text-green-600 font-semibold">Jumlah Absen: {{ $data['data']['jumlah_absen'] ?? '0' }}</p>
       <p class="text-lg text-green-600 font-semibold">Jumlah Izin: {{ $data['data']['jumlah_izin'] ?? '0' }}</p>
       <p class="text-lg text-green-600 font-semibold">Jumlah Sakit: {{ $data['data']['jumlah_sakit'] ?? '0' }}</p>
     @else
-    <p class="text-lg text-red-500 font-semibold">Data tidak tersedia.</p>
+    <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
   @endif
       </div>
       <div class="sm:w-full d-flex content-center w-8">

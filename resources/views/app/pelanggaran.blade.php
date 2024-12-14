@@ -86,10 +86,35 @@
     <div class="mt-4">
       @if(isset($data) && isset($data['result']) && $data['result'] == 'OK')
       <h2 class="text-lg font-bold text-gray-800">Data Pelanggaran</h2>
-      <p class="text-md text-green-600"><strong>Asrama:</strong> {{ $data['data']['nama_asrama'] }}</p>
-      <p class="text-md text-green-600"><strong>Total Pelanggaran:</strong> {{ $data['data']['total_pelanggaran'] }}</p>
+      <p class="text-md text-green-600">
+      <strong>Asrama:</strong> {{ $data['data']['nama_asrama'] ?? '-' }}
+      </p>
+
+      @if(empty(session('tingkat_pelanggaran')))
+      <!-- Jika tingkat_pelanggaran kosong (Semua Tingkat) -->
+      <h3 class="text-md font-bold text-gray-800 mt-4">Data Pelanggaran per Tingkat</h3>
+      <ul class="list-disc ml-6 text-green-600">
+      @if(isset($data['data']['pelanggaran_per_level']) && is_array($data['data']['pelanggaran_per_level']))
+      @foreach($data['data']['pelanggaran_per_level'] as $level => $total)
+      <li>{{ $tingkatPelanggaranLabels[$level] ?? 'Unknown Level' }}: {{ $total }} pelanggaran</li>
+    @endforeach
     @else
-      <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
+      <li>Data pelanggaran per level tidak tersedia.</li>
+    @endif
+      </ul>
+      <p class="text-md text-green-600 mt-2">
+      <strong>Total Keseluruhan:</strong> {{ $data['data']['total_keseluruhan'] ?? 0 }}
+      </p>
+    @else
+      <!-- Jika hanya satu tingkat dipilih -->
+      <p class="text-md text-green-600">
+      <strong>Total Pelanggaran:</strong> {{ $data['data']['total_pelanggaran'] ?? '-' }}
+      </p>
+    @endif
+    @else
+      <p class="text-lg text-red-500 font-semibold">
+      Data belum tersedia.
+      </p>
     @endif
     </div>
   </div>

@@ -8,12 +8,14 @@
   if (file_exists($filePath)) {
     $editableContent = json_decode(file_get_contents($filePath), true);
   }
-@endphp
 
-@php
   $currentYear = date('Y');
   $startYear = $currentYear - 6; // Mengambil 7 tahun terakhir termasuk tahun ini
   $angkatanYears = range($startYear, $currentYear);
+
+  // Jika request tidak punya angkatan/prodi, gunakan session
+  $selectedAngkatan = request('angkatan', session('last_angkatan', ''));
+  $selectedProdi = request('prodi', session('last_prodi', ''));
 @endphp
 
 <div class="container mx-auto px-4 py-8">
@@ -32,7 +34,7 @@
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Semua Angkatan</option>
           @foreach($angkatanYears as $year)
-        <option value="{{ $year }}" {{ request('angkatan') == $year ? 'selected' : '' }}>{{ $year }}</option>
+        <option value="{{ $year }}" {{ $selectedAngkatan == $year ? 'selected' : '' }}>{{ $year }}</option>
       @endforeach
         </select>
       </div>
@@ -44,9 +46,7 @@
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Semua Prodi</option>
           @foreach($prodiList as $id => $name)
-        <option value="{{ $id }}" {{ request('prodi') == $id ? 'selected' : '' }}>
-        {{ $name }}
-        </option>
+        <option value="{{ $id }}" {{ $selectedProdi == $id ? 'selected' : '' }}>{{ $name }}</option>
       @endforeach
         </select>
       </div>
@@ -61,24 +61,30 @@
     </form>
 
     <!-- Display Data -->
+    @php
+    // Gunakan variabel $selectedAngkatan & $selectedProdi di bawah ini agar lebih konsisten
+    $angkatan = $selectedAngkatan;
+    $prodi = $selectedProdi;
+  @endphp
+
     @if(!$angkatan && !$prodi)
     <!-- Semua Prodi, Semua Angkatan -->
     <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan</h2>
     <ul class="text-green-600 font-semibold">
       @if(!empty($dataMahasiswa))
       @foreach($dataMahasiswa as $prodiName => $jumlah)
-      @if($prodiName !== 'total') <!-- Abaikan key 'total' saat looping prodi -->
+      @if($prodiName !== 'total') <!-- Abaikan key 'total' -->
       <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
     @endif
     @endforeach
-      <li class="font-semibold text-green-600">Total mahasiswa: {{ $dataMahasiswa['total'] ?? 0 }} mahasiswa</li>
+      <li class="font-bold text-green-600">Total mahasiswa: {{ $dataMahasiswa['total'] ?? 0 }} mahasiswa</li>
     @else
       <li class="text-red-500">Data belum tersedia.</li>
     @endif
     </ul>
   @elseif(!$angkatan && $prodi)
   <!-- Semua Angkatan, Prodi Terisi -->
-  <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Prodi {{ $prodiList[$prodi] }}</h2>
+  <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}</h2>
   <ul class="text-green-600 font-semibold">
     @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
     @foreach($dataMahasiswa as $angkatanKey => $jumlah)
@@ -105,7 +111,7 @@
 @elseif($angkatan && $prodi)
   <!-- Kedua Parameter Terisi -->
   <h2 class="text-lg font-bold">
-    Jumlah Mahasiswa untuk Prodi {{ $prodiList[$prodi] }} Angkatan {{ $angkatan }}
+    Jumlah Mahasiswa untuk Prodi {{ $prodiList[$prodi] ?? '-' }} Angkatan {{ $angkatan }}
   </h2>
   <p class="text-green-600 font-semibold">
     @if(isset($dataMahasiswa['total']))
@@ -124,7 +130,6 @@
   <!-- Fallback -->
   <p class="text-red-500">Data belum tersedia.</p>
 @endif
-
 
     <!-- Chart for Total Mahasiswa Aktif -->
     <canvas id="totalMahasiswaAktifChart" class="mt-6"></canvas>
@@ -180,10 +185,10 @@
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
-      labels: ['Mahasiswa Aktif'], // Bisa diperbarui sesuai data
+      labels: ['Mahasiswa Aktif'],
       datasets: [{
         label: 'Total Mahasiswa Aktif',
-        data: ['{{ $totalMahasiswaAktif ?? 0 }}'],
+        data: ['{{ $dataMahasiswa['total'] ?? 0 }}'],
         backgroundColor: ['rgba(75, 192, 192, 0.2)'],
         borderColor: ['rgba(75, 192, 192, 1)'],
         borderWidth: 1
@@ -199,5 +204,4 @@
     });
     });
   </script>
-
 @endpush

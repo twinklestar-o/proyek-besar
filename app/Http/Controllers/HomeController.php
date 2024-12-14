@@ -6,14 +6,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
+use GuzzleHttp\Promise\Utils;
 
 class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $angkatan = $request->get('angkatan', ''); // Tetapkan string kosong jika tidak ada
-        $prodi = $request->get('prodi', '');       // Tetapkan string kosong jika tidak ada
-        $dataMahasiswa = [];
+        // Ambil dari request atau session untuk mempertahankan filter terakhir
+        $angkatan = $request->has('angkatan') ? $request->get('angkatan', '') : session('last_angkatan', '');
+        $prodi = $request->has('prodi') ? $request->get('prodi', '') : session('last_prodi', '');
+
+        // Simpan pilihan terakhir ke session
+        session([
+            'last_angkatan' => $angkatan,
+            'last_prodi' => $prodi
+        ]);
+
         $prodiList = [
             1 => 'D3 Teknologi Informasi',
             3 => 'D3 Teknologi Komputer',
@@ -28,6 +36,9 @@ class HomeController extends Controller
 
         $apiToken = session('api_token') ?? $this->getApiToken();
 
+        $dataMahasiswa = [];
+        $errors = [];
+
         if (!$apiToken) {
             Log::error('Failed to obtain API token.');
             $errors = ['Unable to authenticate with the API. Please try again later.'];
@@ -37,41 +48,121 @@ class HomeController extends Controller
         try {
             $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 60]);
 
-            if (empty($angkatan) && !empty($prodi)) {
-                // Semua angkatan tapi prodi terisi
-                $dataMahasiswa = $this->fetchDataByAngkatan($client, $apiToken, $prodi);
-            } elseif (!empty($angkatan) && empty($prodi)) {
-                // Semua prodi tapi angkatan diisi
-                $dataMahasiswa = $this->fetchDataByProdi($client, $apiToken, $angkatan, $prodiList);
-            } else {
-                // Jika $angkatan dan $prodi keduanya kosong (Semua Prodi, Semua Angkatan)
-                $dataMahasiswa = [];
-                $grandTotal = 0;
+            // Buat cache key unik berdasarkan filter
+            $cacheKey = 'dataMahasiswa_' . md5(json_encode(['angkatan' => $angkatan, 'prodi' => $prodi]));
 
-                foreach ($prodiList as $prodiId => $prodiName) {
+            if (Cache::has($cacheKey)) {
+                // Ambil data dari cache
+                $dataMahasiswa = Cache::get($cacheKey);
+            } else {
+                // Data belum di-cache, lakukan request sesuai kondisi
+                if (empty($angkatan) && empty($prodi)) {
+                    // Semua Prodi, Semua Angkatan
+                    $promises = [];
+                    foreach ($prodiList as $prodiId => $prodiName) {
+                        $promises[$prodiName] = $client->getAsync('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                            'headers' => [
+                                'Authorization' => "Bearer $apiToken",
+                                'Accept' => 'application/json',
+                            ],
+                            'query' => [
+                                'angkatan' => '',
+                                'prodi' => $prodiId,
+                            ],
+                        ]);
+                    }
+
+                    $responses = Utils::settle($promises)->wait();
+                    $grandTotal = 0;
+                    foreach ($responses as $prodiName => $result) {
+                        if ($result['state'] === 'fulfilled') {
+                            $data = json_decode($result['value']->getBody()->getContents(), true);
+                            $value = $data['total'] ?? 0;
+                            $dataMahasiswa[$prodiName] = (int) $value;
+                            $grandTotal += (int) $value;
+                        } else {
+                            $dataMahasiswa[$prodiName] = 0;
+                        }
+                    }
+                    $dataMahasiswa['total'] = $grandTotal;
+
+                } elseif (empty($angkatan) && !empty($prodi)) {
+                    // Semua angkatan tapi prodi terisi
+                    $currentYear = date('Y');
+                    $angkatanRange = range($currentYear - 6, $currentYear);
+                    $promises = [];
+                    foreach ($angkatanRange as $year) {
+                        $promises[$year] = $client->getAsync('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                            'headers' => [
+                                'Authorization' => "Bearer $apiToken",
+                                'Accept' => 'application/json',
+                            ],
+                            'query' => [
+                                'angkatan' => $year,
+                                'prodi' => $prodi,
+                            ],
+                        ]);
+                    }
+
+                    $responses = Utils::settle($promises)->wait();
+                    foreach ($responses as $year => $result) {
+                        if ($result['state'] === 'fulfilled') {
+                            $data = json_decode($result['value']->getBody()->getContents(), true);
+                            $dataMahasiswa[$year] = $data['total'] ?? 0;
+                        } else {
+                            $dataMahasiswa[$year] = 0;
+                        }
+                    }
+
+                } elseif (!empty($angkatan) && empty($prodi)) {
+                    // Semua prodi tapi angkatan diisi
+                    $promises = [];
+                    foreach ($prodiList as $prodiId => $prodiName) {
+                        $promises[$prodiName] = $client->getAsync('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
+                            'headers' => [
+                                'Authorization' => "Bearer $apiToken",
+                                'Accept' => 'application/json',
+                            ],
+                            'query' => [
+                                'angkatan' => $angkatan,
+                                'prodi' => $prodiId,
+                            ],
+                        ]);
+                    }
+
+                    $responses = Utils::settle($promises)->wait();
+                    foreach ($responses as $prodiName => $result) {
+                        if ($result['state'] === 'fulfilled') {
+                            $data = json_decode($result['value']->getBody()->getContents(), true);
+                            $dataMahasiswa[$prodiName] = $data['total'] ?? 0;
+                        } else {
+                            $dataMahasiswa[$prodiName] = 0;
+                        }
+                    }
+
+                } else {
+                    // Kedua parameter terisi (single request)
                     $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
                         'headers' => [
                             'Authorization' => "Bearer $apiToken",
                             'Accept' => 'application/json',
                         ],
                         'query' => [
-                            'angkatan' => '',
-                            'prodi' => $prodiId,
+                            'angkatan' => $angkatan,
+                            'prodi' => $prodi,
                         ],
                     ]);
 
                     $data = json_decode($response->getBody()->getContents(), true);
-
                     if (isset($data['total'])) {
-                        $dataMahasiswa[$prodiName] = (int) $data['total'];
-                        $grandTotal += (int) $data['total'];
+                        $dataMahasiswa = ['total' => (int) $data['total']];
                     } else {
-                        $dataMahasiswa[$prodiName] = 0;
+                        $dataMahasiswa = ['message' => 'Data tidak ditemukan.'];
                     }
                 }
 
-                // Tambahkan total keseluruhan
-                $dataMahasiswa['total'] = $grandTotal;
+                // Simpan hasil ke cache selama 5 menit (300 detik)
+                Cache::put($cacheKey, $dataMahasiswa, 300);
             }
 
         } catch (\Exception $e) {
@@ -81,75 +172,6 @@ class HomeController extends Controller
 
         return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi'));
     }
-
-    protected function fetchDataByAngkatan($client, $apiToken, $prodi)
-    {
-        $currentYear = date('Y');
-        $angkatanRange = range($currentYear - 6, $currentYear); // Rentang 7 tahun terakhir
-        $dataMahasiswa = [];
-
-        foreach ($angkatanRange as $angkatan) {
-            try {
-                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
-                    'headers' => [
-                        'Authorization' => "Bearer $apiToken",
-                        'Accept' => 'application/json',
-                    ],
-                    'query' => [
-                        'angkatan' => $angkatan,
-                        'prodi' => $prodi,
-                    ],
-                ]);
-
-                $data = json_decode($response->getBody()->getContents(), true);
-
-                if (isset($data['total'])) {
-                    $dataMahasiswa[$angkatan] = (int) $data['total'];
-                } else {
-                    Log::warning("No 'total' field in response for angkatan {$angkatan}.");
-                }
-            } catch (\Exception $e) {
-                Log::error("Error fetching data for angkatan {$angkatan}:", ['message' => $e->getMessage()]);
-            }
-        }
-
-        return $dataMahasiswa;
-    }
-
-
-
-    protected function fetchDataByProdi($client, $apiToken, $angkatan, $prodiList)
-    {
-        $dataMahasiswa = [];
-
-        foreach ($prodiList as $prodiId => $prodiName) {
-            try {
-                $response = $client->get('https://cis-dev.del.ac.id/api/library-api/get-total-mahasiswa-aktif', [
-                    'headers' => [
-                        'Authorization' => "Bearer $apiToken",
-                        'Accept' => 'application/json',
-                    ],
-                    'query' => [
-                        'angkatan' => $angkatan,
-                        'prodi' => $prodiId,
-                    ],
-                ]);
-
-                $data = json_decode($response->getBody()->getContents(), true);
-
-                if (isset($data['total'])) {
-                    $dataMahasiswa[$prodiName] = (int) $data['total'];
-                } else {
-                    Log::warning("No 'total' field in response for prodi {$prodiName}.");
-                }
-            } catch (\Exception $e) {
-                Log::error("Error fetching data for prodi {$prodiName}:", ['message' => $e->getMessage()]);
-            }
-        }
-
-        return $dataMahasiswa;
-    }
-
 
     protected function getApiToken()
     {
@@ -182,7 +204,4 @@ class HomeController extends Controller
 
         return null;
     }
-
-
-
 }
