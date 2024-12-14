@@ -32,8 +32,6 @@
         </div>
       </div>
 
-
-
       <!-- Tingkat Pelanggaran -->
       <div>
         <label for="tingkat_pelanggaran" class="block text-gray-700 font-semibold mb-2">Tingkat Pelanggaran</label>
@@ -52,7 +50,7 @@
           </option>
           <option value="6" {{ request('tingkat_pelanggaran') == '6' ? 'selected' : '' }}>Berat Level II (Poin 31-75)
           </option>
-          <option value="7" {{ request('tingkat_pelanggaran') == '7' ? 'selected' : '' }}>Berat Level III (Poin >=76)
+          <option value="7" {{ request('tingkat_pelanggaran') == ' 7' ? 'selected' : '' }}>Berat Level III (Poin >=76)
           </option>
         </select>
       </div>
@@ -84,6 +82,17 @@
 
     <!-- Display Data -->
     <div class="mt-4">
+      <h2 class="text-xl font-bold text-gray-800 mb-2">Data Pelanggaran</h2>
+
+      <!-- Chart Pelanggaran -->
+      @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
+      <div class="flex justify-center mb-5">
+        <div class="w-full" style="width: 80%;">
+          <canvas id="pelanggaranChart" style=" width: 100%;"></canvas>
+        </div>
+      </div>
+      @endif
+
       @if(isset($data) && isset($data['result']) && $data['result'] == 'OK')
       <h2 class="text-lg font-bold text-gray-800">Data Pelanggaran</h2>
       <p class="text-md text-green-600">
@@ -91,31 +100,29 @@
       </p>
 
       @if(empty(session('tingkat_pelanggaran')))
-      <!-- Jika tingkat_pelanggaran kosong (Semua Tingkat) -->
       <h3 class="text-md font-bold text-gray-800 mt-4">Data Pelanggaran per Tingkat</h3>
       <ul class="list-disc ml-6 text-green-600">
       @if(isset($data['data']['pelanggaran_per_level']) && is_array($data['data']['pelanggaran_per_level']))
       @foreach($data['data']['pelanggaran_per_level'] as $level => $total)
       <li>{{ $tingkatPelanggaranLabels[$level] ?? 'Unknown Level' }}: {{ $total }} pelanggaran</li>
-    @endforeach
-    @else
+      @endforeach
+      @else
       <li>Data pelanggaran per level tidak tersedia.</li>
-    @endif
+      @endif
       </ul>
       <p class="text-md text-green-600 mt-2">
       <strong>Total Keseluruhan:</strong> {{ $data['data']['total_keseluruhan'] ?? 0 }}
       </p>
-    @else
-      <!-- Jika hanya satu tingkat dipilih -->
+      @else
       <p class="text-md text-green-600">
       <strong>Total Pelanggaran:</strong> {{ $data['data']['total_pelanggaran'] ?? '-' }}
       </p>
-    @endif
-    @else
+      @endif
+      @else
       <p class="text-lg text-red-500 font-semibold">
       Data belum tersedia.
       </p>
-    @endif
+      @endif
     </div>
   </div>
 </div>
@@ -128,13 +135,73 @@
     // Listen for changes in the dropdown
     asramaDropdown.addEventListener('change', function () {
       if (asramaDropdown.value) {
-        // Hide the warning message when a value is selected
         warningMessage.classList.add('hidden');
       } else {
-        // Show the warning message when no value is selected
         warningMessage.classList.remove('hidden');
       }
     });
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const barColors = ["blue", "orange", "red"];
+    const type = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
+
+    function updateChart() {
+      const ringanLevel1 = {{ $data['data']['pelanggaran_per_level'][1] ?? 0 }};
+      const ringanLevel2 = {{ $data['data']['pelanggaran_per_level'][2] ?? 0 }};
+      const sedangLevel1 = {{ $data['data']['pelanggaran_per_level'][3] ?? 0 }};
+      const sedangLevel2 = {{ $data['data']['pelanggaran_per_level'][4] ?? 0 }};
+      const beratLevel1 = {{ $data['data']['pelanggaran_per_level'][5] ?? 0 }};
+      const beratLevel2 = {{ $data['data']['pelanggaran_per_level'][6] ?? 0 }};
+      const beratLevel3 = {{ $data['data']['pelanggaran_per_level'][7] ?? 0 }};
+
+      const jlhPelanggaran = [ringanLevel1, ringanLevel2, sedangLevel1, sedangLevel2, beratLevel1, beratLevel2, beratLevel3];
+
+      const maxValue = Math.max(...jlhPelanggaran);
+      const gap = maxValue;
+      const yMax = maxValue + 2;
+
+      if (pelanggaranChart) {
+        pelanggaranChart.destroy();
+      }
+
+      pelanggaranChart = new Chart("pelanggaranChart", {
+        type: "bar",
+        data: {
+          labels: type,
+          datasets: [
+            {
+              label: 'Jumlah Pelanggaran',
+              backgroundColor: barColors,
+              data: jlhPelanggaran
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Data Pelanggaran Asrama"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: yMax
+            }
+          }
+        }
+      });
+    }
+
+    let pelanggaranChart;
+    if ({{ isset($data) && isset($data['data']) && count($data['data']) > 0 ? 'true' : 'false' }}) {
+      updateChart();
+    }
   });
 </script>
 

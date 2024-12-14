@@ -60,13 +60,23 @@
     <!-- Display Table -->
     <div class="mt-4">
       <h2 class="text-xl font-bold text-gray-800 mb-2">Absensi Data</h2>
+
+      <!-- Chart Absensi Kelas -->
+      @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
+      <div class="flex justify-center mb-5">
+        <div class="sm:w-80">
+          <canvas id="absensiKelasChart"></canvas>
+        </div>
+      </div>
+      @endif
+      
       @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
       <div class="overflow-x-auto">
       <table class="min-w-full bg-white border border-gray-300 rounded-md shadow-sm">
         <thead class="bg-gray-200 text-gray-700">
         <tr>
           <th class="py-2 px-4 border-b">No</th>
-          <th class="py-2 px-4 border-b">Waktu Mulai</th>
+          <th class="py-2 px-4 border-b ">Waktu Mulai</th>
           <th class="py-2 px-4 border-b">Waktu Akhir</th>
           <th class="py-2 px-4 border-b">Sesi</th>
           <th class="py-2 px-4 border-b">Lokasi</th>
@@ -97,4 +107,66 @@
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const barColors = ["royalblue", "red"];
+    const type = ["Hadir", "Tidak Hadir"];
+
+    function updateChart() {
+      const totalMhsKRS = {{ isset($data['data']) ? array_sum(array_column($data['data'], 'total_mhs_krs')) : 0 }};
+      const totalMhsHadir = {{ isset($data['data']) ? array_sum(array_column($data['data'], 'total_mhs_hadir')) : 0 }};
+      const totalMhsAbsen = {{ isset($data['data']) ? array_sum(array_column($data['data'], 'total_mhs_absen')) : 0 }};
+
+      const hadir = totalMhsHadir;
+      const tidakHadir = totalMhsAbsen;
+
+      const persentaseHadir = totalMhsKRS > 0 ? (hadir / totalMhsKRS) * 100 : 0;
+      const persentaseTidakHadir = totalMhsKRS > 0 ? (tidakHadir / totalMhsKRS) * 100 : 0;
+
+      const jlhKehadiran = [persentaseHadir, persentaseTidakHadir];
+
+      if (absensiKelasChart) {
+        absensiKelasChart.destroy();
+      }
+
+      absensiKelasChart = new Chart("absensiKelasChart", {
+        type: "pie",
+        data: {
+          labels: type,
+          datasets: [
+            {
+              label: 'Persentase Kehadiran Mahasiswa',
+              backgroundColor: barColors,
+              data: jlhKehadiran
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Persentase Kehadiran Mahasiswa"
+            },
+            tooltip: {
+              callbacks: {
+                label: function(tooltipItem) {
+                  return tooltipItem.label + ': ' + tooltipItem.raw.toFixed(2) + '%'; // Menambahkan simbol persen
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    let absensiKelasChart;
+    if ({{ isset($data) && isset($data['data']) && count($data['data']) > 0 ? 'true' : 'false' }}) {
+      updateChart();
+    }
+  });
+</script>
+
 @endsection

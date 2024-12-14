@@ -32,7 +32,6 @@
         </div>
       </div>
 
-
       <!-- Start Time -->
       <div>
         <label for="start_time" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
@@ -60,17 +59,25 @@
 
     <!-- Display Data -->
     <div class="flex flex-row">
-      <div class="mt-4">
+      <div class="mt-4 w-full">
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Absensi Data</h2>
+
+        <!-- Chart Absensi Asrama -->
+        @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
+        <div class="flex justify-center mb-5">
+          <div class="w-full" style="width: 80%;">
+            <canvas id="absensiAsramaChart" style=" width: 100%;"></canvas>
+          </div>
+        </div>
+        @endif
+
         @if(isset($data) && isset($data['result']) && $data['result'] == "OK")
-      <p class="text-lg text-green-600 font-semibold">Jumlah Absen: {{ $data['data']['jumlah_absen'] ?? '0' }}</p>
-      <p class="text-lg text-green-600 font-semibold">Jumlah Izin: {{ $data['data']['jumlah_izin'] ?? '0' }}</p>
-      <p class="text-lg text-green-600 font-semibold">Jumlah Sakit: {{ $data['data']['jumlah_sakit'] ?? '0' }}</p>
-    @else
-    <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
-  @endif
-      </div>
-      <div class="sm:w-full d-flex content-center w-8">
-        <canvas id="absensiAsramaChart"></canvas>
+          <p class="text-lg text-green-600 font-semibold">Jumlah Absen: {{ $data['data']['jumlah_absen'] ?? '0' }}</p>
+          <p class="text-lg text-green-600 font-semibold">Jumlah Izin: {{ $data['data']['jumlah_izin'] ?? '0' }}</p>
+          <p class="text-lg text-green-600 font-semibold">Jumlah Sakit: {{ $data['data']['jumlah_sakit'] ?? '0' }}</p>
+        @else
+          <p class="text-lg text-red-500 font-semibold">Data belum tersedia.</p>
+        @endif
       </div>
     </div>
   </div>
