@@ -1,6 +1,19 @@
 @extends('auth.app')
 
 @section('content')
+@php
+  // Definisikan mapping id_asrama ke nama_asrama
+  $asramas = [
+    '1' => 'Pniel',
+    '2' => 'Kapernaum',
+    '3' => 'Silo',
+    '7' => 'Mamre',
+    '8' => 'Nazareth',
+    '17' => 'Kana',
+    '20' => 'Jati',
+  ];
+@endphp
+
 <div class="container mx-auto px-4 py-8">
   <!-- Pelanggaran Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
@@ -15,19 +28,26 @@
         <select name="id_asrama" id="id_asrama"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Pilih Asrama</option>
-          <option value="1" {{ request('id_asrama') == '1' ? 'selected' : '' }}>Pniel</option>
-          <option value="2" {{ request('id_asrama') == '2' ? 'selected' : '' }}>Kapernaum</option>
-          <option value="3" {{ request('id_asrama') == '3' ? 'selected' : '' }}>Silo</option>
-          <option value="7" {{ request('id_asrama') == '7' ? 'selected' : '' }}>Mamre</option>
-          <option value="8" {{ request('id_asrama') == '8' ? 'selected' : '' }}>Nazareth</option>
-          <option value="17" {{ request('id_asrama') == '17' ? 'selected' : '' }}>Kana</option>
-          <option value="20" {{ request('id_asrama') == '20' ? 'selected' : '' }}>Jati</option>
+          <option value="1" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '1') ? 'selected' : '' }}>Pniel
+          </option>
+          <option value="2" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '2') ? 'selected' : '' }}>
+            Kapernaum</option>
+          <option value="3" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '3') ? 'selected' : '' }}>Silo
+          </option>
+          <option value="7" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '7') ? 'selected' : '' }}>Mamre
+          </option>
+          <option value="8" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '8') ? 'selected' : '' }}>
+            Nazareth</option>
+          <option value="17" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '17') ? 'selected' : '' }}>Kana
+          </option>
+          <option value="20" {{ (isset($filters['id_asrama']) && $filters['id_asrama'] == '20') ? 'selected' : '' }}>Jati
+          </option>
         </select>
 
         <!-- Warning -->
         <div id="warning-message"
-          class="mt-2 flex items-center text-yellow-600 {{ empty(request('id_asrama')) ? '' : 'hidden' }}">
-          <p class=font-semibold> ! &nbsp;</p>
+          class="mt-2 flex items-center text-yellow-600 {{ empty($filters['id_asrama']) ? '' : 'hidden' }}">
+          <p class="font-semibold"> ! &nbsp;</p>
           <p class="text-sm">Silakan pilih asrama untuk mendapatkan data.</p>
         </div>
       </div>
@@ -38,20 +58,13 @@
         <select name="tingkat_pelanggaran" id="tingkat_pelanggaran"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2">
           <option value="">Semua Tingkat</option>
-          <option value="1" {{ request('tingkat_pelanggaran') == '1' ? 'selected' : '' }}>Ringan Level I (Poin 1-5)
-          </option>
-          <option value="2" {{ request('tingkat_pelanggaran') == '2' ? 'selected' : '' }}>Ringan Level II (Poin 6-10)
-          </option>
-          <option value="3" {{ request('tingkat_pelanggaran') == '3' ? 'selected' : '' }}>Sedang Level I (Poin 11-15)
-          </option>
-          <option value="4" {{ request('tingkat_pelanggaran') == '4' ? 'selected' : '' }}>Sedang Level II (Poin 16-24)
-          </option>
-          <option value="5" {{ request('tingkat_pelanggaran') == '5' ? 'selected' : '' }}>Berat Level I (Poin 25-30)
-          </option>
-          <option value="6" {{ request('tingkat_pelanggaran') == '6' ? 'selected' : '' }}>Berat Level II (Poin 31-75)
-          </option>
-          <option value="7" {{ request('tingkat_pelanggaran') == ' 7' ? 'selected' : '' }}>Berat Level III (Poin >=76)
-          </option>
+          <option value="1" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '1') ? 'selected' : '' }}>Ringan Level I (Poin 1-5)</option>
+          <option value="2" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '2') ? 'selected' : '' }}>Ringan Level II (Poin 6-10)</option>
+          <option value="3" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '3') ? 'selected' : '' }}>Sedang Level I (Poin 11-15)</option>
+          <option value="4" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '4') ? 'selected' : '' }}>Sedang Level II (Poin 16-24)</option>
+          <option value="5" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '5') ? 'selected' : '' }}>Berat Level I (Poin 25-30)</option>
+          <option value="6" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '6') ? 'selected' : '' }}>Berat Level II (Poin 31-75)</option>
+          <option value="7" {{ (isset($filters['tingkat_pelanggaran']) && $filters['tingkat_pelanggaran'] == '7') ? 'selected' : '' }}>Berat Level III (Poin >=76)</option>
         </select>
       </div>
 
@@ -60,7 +73,7 @@
         <label for="start_date" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
         <input type="date" name="start_date" id="start_date"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('start_date') }}">
+          value="{{ $filters['start_date'] ?? '' }}">
       </div>
 
       <!-- End Date -->
@@ -68,7 +81,7 @@
         <label for="end_date" class="block text-gray-700 font-semibold mb-2">Sampai tanggal : </label>
         <input type="date" name="end_date" id="end_date"
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('end_date') }}">
+          value="{{ $filters['end_date'] ?? '' }}">
       </div>
 
       <!-- Fetch Data Button -->
@@ -87,42 +100,49 @@
       <!-- Chart Pelanggaran -->
       @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
       <div class="flex justify-center mb-5">
-        <div class="w-full" style="width: 80%;">
-          <canvas id="pelanggaranChart" style=" width: 100%;"></canvas>
-        </div>
+      <div class="w-full" style="width: 80%;">
+        <canvas id="pelanggaranChart" style=" width: 100%;"></canvas>
       </div>
-      @endif
+      </div>
+    @endif
 
       @if(isset($data) && isset($data['result']) && $data['result'] == 'OK')
       <h2 class="text-lg font-bold text-gray-800">Data Pelanggaran</h2>
       <p class="text-md text-green-600">
-      <strong>Asrama:</strong> {{ $data['data']['nama_asrama'] ?? '-' }}
+      <strong>Asrama:</strong> {{ $asramas[$filters['id_asrama']] ?? '-' }}
       </p>
 
-      @if(empty(session('tingkat_pelanggaran')))
+      @if(empty($filters['tingkat_pelanggaran']))
       <h3 class="text-md font-bold text-gray-800 mt-4">Data Pelanggaran per Tingkat</h3>
       <ul class="list-disc ml-6 text-green-600">
       @if(isset($data['data']['pelanggaran_per_level']) && is_array($data['data']['pelanggaran_per_level']))
       @foreach($data['data']['pelanggaran_per_level'] as $level => $total)
-      <li>{{ $tingkatPelanggaranLabels[$level] ?? 'Unknown Level' }}: {{ $total }} pelanggaran</li>
-      @endforeach
-      @else
-      <li>Data pelanggaran per level tidak tersedia.</li>
-      @endif
+      <li>
+      {{ $tingkatPelanggaranLabels[$level] ?? 'Unknown Level' }}:
+      @if($total !== null)
+      {{ $total }} pelanggaran
+    @else
+      <span class="text-red-500">Data tidak tersedia.</span>
+    @endif
+      </li>
+    @endforeach
+    @else
+      <li class="text-red-500">Data pelanggaran per level tidak tersedia.</li>
+    @endif
       </ul>
       <p class="text-md text-green-600 mt-2">
-      <strong>Total Keseluruhan:</strong> {{ $data['data']['total_keseluruhan'] ?? 0 }}
+      <strong>Total Keseluruhan:</strong> {{ $data['data']['total_keseluruhan'] ?? '-' }}
       </p>
-      @else
+    @else
       <p class="text-md text-green-600">
       <strong>Total Pelanggaran:</strong> {{ $data['data']['total_pelanggaran'] ?? '-' }}
       </p>
-      @endif
-      @else
+    @endif
+    @else
       <p class="text-lg text-red-500 font-semibold">
       Data belum tersedia.
       </p>
-      @endif
+    @endif
     </div>
   </div>
 </div>
@@ -145,7 +165,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     const barColors = ["blue", "orange", "red"];
     const type = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
 
@@ -161,7 +181,6 @@
       const jlhPelanggaran = [ringanLevel1, ringanLevel2, sedangLevel1, sedangLevel2, beratLevel1, beratLevel2, beratLevel3];
 
       const maxValue = Math.max(...jlhPelanggaran);
-      const gap = maxValue;
       const yMax = maxValue + 2;
 
       if (pelanggaranChart) {
