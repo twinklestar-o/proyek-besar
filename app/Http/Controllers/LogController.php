@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 class LogController extends Controller
 {
@@ -15,11 +16,24 @@ class LogController extends Controller
         $dataKeluar = null;
         $errors = [];
 
-        // Cek apakah ada parameter masuk atau keluar
-        $hasMasukParams = $request->filled('start_masuk') || $request->filled('end_masuk');
-        $hasKeluarParams = $request->filled('start_keluar') || $request->filled('end_keluar');
+        // Retrieve filters from request or session
+        $startMasuk = $request->input('start_masuk', session('last_start_masuk', ''));
+        $endMasuk = $request->input('end_masuk', session('last_end_masuk', ''));
+        $startKeluar = $request->input('start_keluar', session('last_start_keluar', ''));
+        $endKeluar = $request->input('end_keluar', session('last_end_keluar', ''));
 
-        // Validasi parameter
+        // Store current filters in session
+        session([
+            'last_start_masuk' => $startMasuk,
+            'last_end_masuk' => $endMasuk,
+            'last_start_keluar' => $startKeluar,
+            'last_end_keluar' => $endKeluar,
+        ]);
+
+        $hasMasukParams = !empty($startMasuk) || !empty($endMasuk);
+        $hasKeluarParams = !empty($startKeluar) || !empty($endKeluar);
+
+        // Validate request inputs
         $request->validate([
             'start_masuk' => 'nullable|date',
             'end_masuk' => 'nullable|date',
@@ -30,99 +44,181 @@ class LogController extends Controller
             'year' => 'nullable|integer|min:2000|max:2099',
         ]);
 
-        // Hanya lanjutkan jika ada parameter (masuk/keluar) yang terisi
-        if ($hasMasukParams || $hasKeluarParams) {
-
-            $apiToken = session('api_token') ?? $this->getApiToken();
-
-            if (!$apiToken) {
-                Log::error('Failed to obtain API token.');
-                $errors = ['Unable to authenticate with the API. Please try again later.'];
-                return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors'));
-            }
-
-            try {
-                // Jika ada parameter masuk
-                if ($hasMasukParams) {
-                    $formParamsMasuk = array_filter([
-                        'start_masuk' => $request->start_masuk,
-                        'end_masuk' => $request->end_masuk,
-                        // Param lain seperti day, month, year jika perlu.
-                        'day' => $request->day,
-                        'month' => $request->month,
-                        'year' => $request->year,
-                    ]);
-                    $dataMasuk = $this->fetchLogData($apiToken, $formParamsMasuk, 'masuk');
-                }
-
-                // Jika ada parameter keluar
-                if ($hasKeluarParams) {
-                    $formParamsKeluar = array_filter([
-                        'start_keluar' => $request->start_keluar,
-                        'end_keluar' => $request->end_keluar,
-                        // Param lain seperti day, month, year jika perlu.
-                        'day' => $request->day,
-                        'month' => $request->month,
-                        'year' => $request->year,
-                    ]);
-                    $dataKeluar = $this->fetchLogData($apiToken, $formParamsKeluar, 'keluar');
-                }
-
-                if (!$dataMasuk && !$dataKeluar) {
-                    $errors = ['Unable to fetch data from the API. Please try again later.'];
-                }
-
-            } catch (\Exception $e) {
-                if ($e->getCode() === 401) {
-                    Log::warning('Token expired, attempting to refresh...');
-                    session()->forget('api_token');
-                    $apiToken = $this->getApiToken();
-
-                    if ($apiToken) {
-                        return $this->getLogMahasiswa($request);
-                    }
-                }
-
-                Log::error('Error fetching Log Mahasiswa data:', ['message' => $e->getMessage()]);
-                $errors = ['Unable to fetch data from the API. Please try again later.'];
-            }
-        } else {
-            // Jika tidak ada parameter sama sekali
+        if (!$hasMasukParams && !$hasKeluarParams) {
             $errors = ['Harap isi setidaknya salah satu parameter.'];
+            return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
         }
 
-        return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors'));
-    }
+        // Obtain API token synchronously
+        $apiToken = session('api_token');
+        if (!$apiToken) {
+            $apiToken = $this->getApiToken();
+            if (!$apiToken) {
+                $errors = ['Unable to authenticate with the API. Please try again later.'];
+                return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
+            }
+        }
 
-    protected function fetchLogData($apiToken, $formParams, $tipe)
-    {
-        $cacheKey = 'logMahasiswa_' . $tipe . '_' . md5(json_encode($formParams));
-
-        return Cache::remember($cacheKey, 300, function () use ($apiToken, $formParams) {
-            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
-            $response = $client->post('https://cis-dev.del.ac.id/api/statistik-api/get-total-log-mhs', [
-                'headers' => [
-                    'Authorization' => "Bearer $apiToken",
-                    'Accept' => 'application/json',
-                ],
-                'query' => $formParams,
+        try {
+            $client = new Client([
+                'verify' => false,
+                'timeout' => 10,
+                'stream' => true,
+                'http_errors' => false, // Disable throwing exceptions on HTTP errors
             ]);
+            $promises = [];
 
-            if ($response->getStatusCode() === 200) {
-                $data = json_decode($response->getBody(), true);
-                return $data;
+            if ($hasMasukParams) {
+                $formParamsMasuk = array_filter([
+                    'start_masuk' => $startMasuk,
+                    'end_masuk' => $endMasuk,
+                    'day' => $request->input('day'),
+                    'month' => $request->input('month'),
+                    'year' => $request->input('year'),
+                ]);
+                $promises['masuk'] = $this->getLogPromise($client, $apiToken, $formParamsMasuk);
             }
 
-            return null;
-        });
+            if ($hasKeluarParams) {
+                $formParamsKeluar = array_filter([
+                    'start_keluar' => $startKeluar,
+                    'end_keluar' => $endKeluar,
+                    'day' => $request->input('day'),
+                    'month' => $request->input('month'),
+                    'year' => $request->input('year'),
+                ]);
+                $promises['keluar'] = $this->getLogPromise($client, $apiToken, $formParamsKeluar);
+            }
+
+            // Wait for all promises to settle
+            $results = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+
+            // Process Masuk Logs
+            if (isset($results['masuk'])) {
+                if ($results['masuk']['state'] === 'fulfilled') {
+                    $response = $results['masuk']['value'];
+                    if ($response->getStatusCode() === 200) {
+                        $dataMasuk = json_decode($response->getBody(), true);
+                    } else {
+                        $errors[] = 'Failed to fetch Log Masuk: ' . $response->getReasonPhrase();
+                    }
+                } else {
+                    $errors[] = 'Failed to fetch Log Masuk: ' . $results['masuk']['reason']->getMessage();
+                }
+            }
+
+            // Process Keluar Logs
+            if (isset($results['keluar'])) {
+                if ($results['keluar']['state'] === 'fulfilled') {
+                    $response = $results['keluar']['value'];
+                    if ($response->getStatusCode() === 200) {
+                        $dataKeluar = json_decode($response->getBody(), true);
+                    } else {
+                        $errors[] = 'Failed to fetch Log Keluar: ' . $response->getReasonPhrase();
+                    }
+                } else {
+                    $errors[] = 'Failed to fetch Log Keluar: ' . $results['keluar']['reason']->getMessage();
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching Log Mahasiswa data:', ['message' => $e->getMessage()]);
+            $errors[] = 'Unable to fetch data from the API. Please try again later.';
+        }
+
+        return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
     }
 
+    protected function getLogPromise(Client $client, $apiToken, array $formParams, $retry = true)
+    {
+        // Create a unique cache key based on form parameters
+        $cacheKey = 'logMahasiswa_' . md5(json_encode($formParams));
+
+        // If data exists in cache, return a fulfilled promise with cached data
+        if (Cache::has($cacheKey)) {
+            return \GuzzleHttp\Promise\Create::promiseFor(new \GuzzleHttp\Psr7\Response(
+                200,
+                ['Content-Type' => 'application/json'],
+                json_encode(Cache::get($cacheKey))
+            ));
+        }
+
+        // If not cached, make an asynchronous API request
+        return $client->postAsync('https://cis-dev.del.ac.id/api/statistik-api/get-total-log-mhs', [
+            'headers' => [
+                'Authorization' => "Bearer $apiToken",
+                'Accept' => 'application/json',
+            ],
+            'query' => $formParams,
+        ])->then(
+                function ($response) use ($cacheKey, $formParams, $client, &$apiToken, $retry) {
+                    if ($response->getStatusCode() === 200) {
+                        $data = json_decode($response->getBody(), true);
+
+                        // Cache the data only if the result is 'OK'
+                        if (isset($data['result']) && $data['result'] === 'OK') {
+                            Cache::put($cacheKey, $data, 300); // Cache for 5 minutes
+                        }
+
+                        return $response;
+                    } elseif ($response->getStatusCode() === 401 && $retry) {
+                        // Token might have expired, attempt to refresh it
+                        Log::warning('API token expired. Attempting to refresh token.');
+
+                        $newApiToken = $this->getApiToken();
+                        if ($newApiToken) {
+                            // Retry the request with the new token
+                            return $client->postAsync('https://cis-dev.del.ac.id/api/statistik-api/get-total-log-mhs', [
+                                'headers' => [
+                                    'Authorization' => "Bearer $newApiToken",
+                                    'Accept' => 'application/json',
+                                ],
+                                'query' => $formParams,
+                            ])->then(
+                                    function ($newResponse) use ($cacheKey) {
+                                if ($newResponse->getStatusCode() === 200) {
+                                    $data = json_decode($newResponse->getBody(), true);
+
+                                    // Cache the data only if the result is 'OK'
+                                    if (isset($data['result']) && $data['result'] === 'OK') {
+                                        Cache::put($cacheKey, $data, 300); // Cache for 5 minutes
+                                    }
+
+                                    return $newResponse;
+                                }
+
+                                // If still unauthorized, return the original response
+                                return $newResponse;
+                            }
+                                );
+                        } else {
+                            // Unable to refresh token
+                            Log::error('Failed to refresh API token.');
+                            return $response;
+                        }
+                    }
+
+                    // For other status codes, return the response as is
+                    return $response;
+                },
+                function ($exception) {
+                    // Handle network or other errors
+                    Log::error('Network or other error during API request:', ['message' => $exception->getMessage()]);
+                    throw $exception; // Let the exception propagate
+                }
+            );
+    }
 
     protected function getApiToken()
     {
         try {
             Log::info('Attempting API login...');
-            $client = new Client(['verify' => false, 'stream' => true, 'timeout' => 10]);
+            $client = new Client([
+                'verify' => false,
+                'timeout' => 10,
+                'stream' => true,
+                'http_errors' => false, // Disable throwing exceptions on HTTP errors
+            ]);
 
             $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
                 'form_params' => [
@@ -134,22 +230,25 @@ class LogController extends Controller
                 ],
             ]);
 
-            $body = $response->getBody()->getContents();
-            $data = json_decode($body, true);
+            if ($response->getStatusCode() === 200) {
+                $body = $response->getBody()->getContents();
+                $data = json_decode($body, true);
 
-            if ($response->getStatusCode() === 200 && isset($data['token'])) {
-                // Store the token in the session
-                session([
-                    'api_token' => $data['token'],
-                    'api_token_obtained_at' => now(),
-                ]);
-                Log::info('API login successful, token stored in session.', ['token' => $data['token']]);
-                return $data['token'];
+                if (isset($data['token'])) {
+                    session([
+                        'api_token' => $data['token'],
+                        'api_token_obtained_at' => now(),
+                    ]);
+                    Log::info('API login successful, token stored in session.');
+                    return $data['token'];
+                }
             }
 
-            Log::error('API login failed.', ['response' => $data]);
-        } catch (\Exception $e) {
+            Log::error('API login failed.', ['response' => $response->getBody()->getContents()]);
+        } catch (RequestException $e) {
             Log::error('Error during API login:', ['message' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            Log::error('Unexpected error during API login:', ['message' => $e->getMessage()]);
         }
 
         return null;

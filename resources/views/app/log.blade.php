@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Log Mahasiswa Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Log Mahasiswa</h1>
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">Log Keluar/Masuk Mahasiswa</h1>
 
     <!-- Filter Form -->
     <form id="filterForm" method="GET"
@@ -12,13 +12,13 @@
 
       <!-- Mahasiswa Masuk -->
       <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Mahasiswa Masuk</h2>
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Log Masuk</h2>
         <!-- Start Masuk -->
         <div>
           <label for="start_masuk" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
           <input type="date" name="start_masuk" id="start_masuk"
             class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-            value="{{ request('start_masuk') }}">
+            value="{{ old('start_masuk', $startMasuk ?? '') }}">
         </div>
 
         <!-- End Masuk -->
@@ -26,19 +26,19 @@
           <label for="end_masuk" class="block text-gray-700 font-semibold mb-2">Sampai tanggal : </label>
           <input type="date" name="end_masuk" id="end_masuk"
             class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-            value="{{ request('end_masuk') }}">
+            value="{{ old('end_masuk', $endMasuk ?? '') }}">
         </div>
       </div>
 
       <!-- Mahasiswa Keluar -->
       <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-2">Mahasiswa Keluar</h2>
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Log Keluar</h2>
         <!-- Start Keluar -->
         <div>
           <label for="start_keluar" class="block text-gray-700 font-semibold mb-2">Dari tanggal : </label>
           <input type="date" name="start_keluar" id="start_keluar"
             class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-            value="{{ request('start_keluar') }}">
+            value="{{ old('start_keluar', $startKeluar ?? '') }}">
         </div>
 
         <!-- End Keluar -->
@@ -46,7 +46,7 @@
           <label for="end_keluar" class="block text-gray-700 font-semibold mb-2">Sampai tanggal : </label>
           <input type="date" name="end_keluar" id="end_keluar"
             class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-            value="{{ request('end_keluar') }}">
+            value="{{ old('end_keluar', $endKeluar ?? '') }}">
         </div>
       </div>
 
@@ -64,7 +64,7 @@
       @if(isset($dataMasuk) || isset($dataKeluar))
       @if($dataMasuk && $dataMasuk['result'] === 'OK')
       <p class="text-lg text-green-600 font-semibold">
-      Total Mahasiswa Masuk: {{ $dataMasuk['total'] ?? '0' }}
+      Total Log Masuk: {{ $dataMasuk['total'] ?? '0' }}
       </p>
       @if(isset($dataMasuk['logs']) && is_array($dataMasuk['logs']))
       <div class="mt-4">
@@ -84,7 +84,7 @@
 
       @if($dataKeluar && $dataKeluar['result'] === 'OK')
       <p class="text-lg text-blue-600 font-semibold mt-6">
-      Total Mahasiswa Keluar: {{ $dataKeluar['total'] ?? '0' }}
+      Total Log Keluar: {{ $dataKeluar['total'] ?? '0' }}
       </p>
       @if(isset($dataKeluar['logs']) && is_array($dataKeluar['logs']))
       <div class="mt-4">
