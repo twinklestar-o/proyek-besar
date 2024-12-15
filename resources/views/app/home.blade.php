@@ -26,7 +26,6 @@
     <!-- Filter form for angkatan and prodi -->
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
       class="mb-4 space-y-4">
-
       <!-- Dropdown for angkatan -->
       <div>
         <label for="angkatan" class="block text-gray-700 font-semibold mb-2">Filter by Angkatan :</label>
@@ -81,7 +80,7 @@
 
       <ul class="text-green-600 font-semibold">
         @if(!empty($dataMahasiswa))
-          @foreach($dataMahasiswa as $prodiName => $jumlah)
+          @foreach ($dataMahasiswa as $prodiName => $jumlah)
             @if($prodiName !== 'total') <!-- Abaikan key 'total' -->
               <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
             @endif
@@ -233,7 +232,9 @@
   <!-- Prestasi Section -->
   <div class="bg-white shadow-md rounded-lg p-6 mt-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Prestasi</h1>
-    <p class="text-gray-600 mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+    <p class="text-gray-600 mb-4">
+      Prestasi akademik dan non-akademik mahasiswa mencerminkan dedikasi dan usaha para mahasiswa dalam mencapai tujuan pendidikan. Melalui berbagai kompetisi dan kegiatan, mahasiswa berkesempatan untuk menunjukkan kemampuan dan keterampilan yang telah mereka pelajari.
+    </p>
     <form id="filterPrestasi" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
       class="mb-4 space-y-4">
       <div>
@@ -244,8 +245,12 @@
         <label for="semester">Semester</label>
       </div>
     </form>
-    <canvas id="prestasiTahun"></canvas>
+    <div class="flex justify-center mb-5">
+      <div class="w-full" style="width: 80%;">
+        <canvas id="prestasiTahun"></canvas>
     <canvas id="prestasiSemester" style="display: none;"></canvas>
+      </div>
+    </div>
   </div>
 
   <!-- Kegiatan Luar Kampus Section -->
@@ -253,69 +258,143 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus</h1>
     <div class="space-y-4">
       <h5 class="font-bold text-gray-700">1. MBKM</h5>
-      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-gray-600">
+        Program MBKM (Merdeka Belajar Kampus Merdeka) memberikan mahasiswa kesempatan untuk belajar di luar kelas, mengembangkan keterampilan praktis, dan berkontribusi pada masyarakat. Melalui program ini, mahasiswa dapat mengikuti magang, proyek sosial, dan kegiatan lainnya yang mendukung pembelajaran holistik.
+      </p>
 
       <h5 class="font-bold text-gray-700">2. IISMA</h5>
-      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-gray-600">
+        IISMA (<i>Indonesian International Student Mobility Awards</i>) adalah program yang memungkinkan mahasiswa Indonesia untuk belajar di universitas luar negeri. Program ini bertujuan untuk memperluas wawasan global mahasiswa, meningkatkan kemampuan bahasa, dan membangun jaringan internasional yang bermanfaat untuk karier mereka di masa depan.
+      </p>
 
-      <h5 class="font-bold text-gray-700">3. Kerja Praktik</h5>
-      < <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <h5 class="font-bold text-gray-700"> 3. Kerja Praktik</h5>
+      <p class="text-gray-600">
+        Kerja praktik memberikan mahasiswa pengalaman langsung di dunia kerja, memungkinkan mereka untuk menerapkan teori yang telah dipelajari di kampus. Melalui kerja praktik, mahasiswa dapat mengembangkan keterampilan profesional dan membangun koneksi dengan industri.
+      </p>
 
       <h5 class="font-bold text-gray-700">4. Studi Independent</h5>
-      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-gray-600">
+        Studi independent adalah kesempatan bagi mahasiswa untuk mengeksplorasi topik atau proyek penelitian secara mandiri. Program ini mendorong kreativitas dan inisiatif, memungkinkan mahasiswa untuk mendalami minat pribadi dan mengembangkan kemampuan analitis.
+      </p>
 
       <h5 class="font-bold text-gray-700">5. Pertukaran Pelajar</h5>
-      <p class="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      <p class="text-gray-600">
+        Program pertukaran pelajar memungkinkan mahasiswa untuk belajar di institusi pendidikan di negara lain selama periode tertentu. Ini memberikan pengalaman budaya yang berharga, memperluas perspektif akademik, dan meningkatkan kemampuan adaptasi di lingkungan internasional.
+      </p>
     </div>
-    <canvas id="jlhMahasiswaKegiatanChart"></canvas>
+    <div class="flex justify-center mb-5">
+      <div class="w-full" style="width: 80%;">
+        <canvas id="jlhMahasiswaKegiatanChart"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const barColors = ["royalblue", "royalblue", "royalblue"];
-    const prodiNames = @json(array_keys($dataMahasiswa)); // Ambil nama prodi
-    const prodiCounts = @json(array_values($dataMahasiswa)); // Ambil jumlah mahasiswa
+    const semester = ["Ganjil", "Genap"];
+    const kegiatan = ["MBKM", "IISMA", "Kerja Praktik", "Studi Independent", "Pertukaran Pelajar"];
+    const jlhMahasiswaKegiatan = [137, 145, 137, 159, 156]; // Data jumlah mahasiswa untuk setiap kegiatan
 
-    function updateChart() {
-      const jlhMahasiswa = prodiCounts.filter((_, index) => prodiNames[index] !== 'total'); // Filter untuk mengabaikan 'total'
-
-      if (semuaProdiAngkatanChart) {
-        semuaProdiAngkatanChart.destroy();
-      }
-
-      semuaProdiAngkatanChart = new Chart("semuaProdiAngkatanChart", {
-        type: "bar",
-        data: {
-          labels: prodiNames.filter(name => name !== 'total'), // Ambil nama prodi tanpa 'total'
-          datasets: [
-            {
-              label: 'Jumlah Mahasiswa per Prodi',
-              backgroundColor: barColors,
-              data: jlhMahasiswa
-            }
-          ]
-        },
-        options: {
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: "Jumlah Mahasiswa per Prodi"
-            }
+    const prestasiSemesterChart = new Chart("prestasiSemester", {
+      type: "bar",
+      data: {
+        labels: semester,
+        datasets: [
+          {
+            label: 'Akademik',
+            backgroundColor: 'royalblue',
+            data: [43, 45] // Data prestasi akademik per semester
           },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
+          {
+            label: 'NonAkademik',
+            backgroundColor: 'darkgray',
+            data: [4, 5] // Data prestasi non-akademik per semester
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Jumlah Prestasi/Semester'
+        },
+        scales: {
+          y: {
+            beginAtZero: true
           }
         }
-      });
-    }
+      }
+    });
 
-    let semuaProdiAngkatanChart;
-    updateChart();
+    const prestasiTahunChart = new Chart("prestasiTahun", {
+      type: "bar",
+      data: {
+        labels: @json($angkatanYears),
+        datasets: [
+          {
+            label: 'Akademik',
+            backgroundColor: 'royalblue',
+            data: [137, 145, 137, 159, 156, 151] // Data prestasi akademik per tahun
+          },
+          {
+            label: 'NonAkademik',
+            backgroundColor: 'darkgray',
+            data: [17, 15, 13, 19, 16, 21] // Data prestasi non-akademik per tahun
+          }
+        ]
+      },
+      options: {
+        title: {
+          display: true,
+          text: 'Jumlah Prestasi/Tahun'
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    const jlhMahasiswaKegiatanChart = new Chart("jlhMahasiswaKegiatanChart", {
+      type: "bar",
+      data: {
+        labels: kegiatan,
+        datasets: [{
+          label: 'Jumlah Mahasiswa',
+          backgroundColor: 'royalblue',
+          data: jlhMahasiswaKegiatan
+        }]
+      },
+      options: {
+        title: {
+          display: true,
+          text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Menyembunyikan dan menampilkan canvas berdasarkan radio button dengan name waktu
+    document.querySelectorAll('input[name="waktu"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'semester') {
+          document.getElementById('prestasiSemester').style.display = 'block';
+          document.getElementById('prestasiTahun').style.display = 'none';
+        } else {
+          document.getElementById('prestasiSemester').style.display = 'none';
+          document.getElementById('prestasiTahun').style.display = 'block';
+        }
+      });
+    });
+
+    // Inisialisasi tampilan awal
+    document.getElementById('prestasiSemester').style.display = 'none';
   });
 </script>
 
@@ -328,7 +407,7 @@
         data: {
           labels: ['Mahasiswa Aktif'],
           datasets: [{
-            label: 'Total Mahasiswa Aktif',
+            label: 'Total Mah asiswa Aktif',
             data: ['{{ $dataMahasiswa['total'] ?? 0 }}'],
             backgroundColor: ['rgba(75, 192, 192, 0.2)'],
             borderColor: ['rgba(75, 192, 192, 1)'],
@@ -345,77 +424,6 @@
       });
     });
   </script>
-
-  <!-- Chart untuk Semua Prodi dan Angkatan terisi-->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const angkatanData = @json($dataMahasiswa); // Ambil data angkatan
-      const prodiLabels = Object.keys(angkatanData); // Ambil label prodi
-      const angkatanCounts = Object.values(angkatanData); // Ambil jumlah mahasiswa per prodi
-
-      const semuaProdiChart = new Chart("semuaProdiChart", {
-        type: "bar",
-        data: {
-          labels: prodiLabels,
-          datasets: [{
-            label: 'Jumlah Mahasiswa per Prodi',
-            backgroundColor: 'royalblue',
-            data: angkatanCounts
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: "Jumlah Mahasiswa per Program Studi untuk Angkatan {{ $angkatan }}"
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-    });
-  </script>
-
-  <!--Chart untuk semua Angkatan dan prodi terisi
-      Chart untuk kedua parameter bila terisi -->
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          const angkatanData = @json($dataMahasiswa); // Ambil data angkatan
-          const angkatanLabels = Object.keys(angkatanData); // Ambil label angkatan
-          const angkatanCounts = Object.values(angkatanData); // Ambil jumlah mahasiswa per angkatan
-
-          const semuaAngkatanChart = new Chart("semuaAngkatanChart", {
-            type: "bar",
-            data: {
-              labels: angkatanLabels,
-              datasets: [{
-                label: 'Jumlah Mahasiswa per Angkatan',
-                backgroundColor: angkatanLabels.map(label => label === '{{ $angkatan }}' ? 'red' : 'royalblue'),
-                data: angkatanCounts
-              }]
-            },
-            options: {
-              plugins: {
-                legend: { display: true },
-                title: {
-                  display: true,
-                  text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true
-                }
-              }
-            }
-          });
-        });
-      </script>
 @endpush
 
 @endsection
