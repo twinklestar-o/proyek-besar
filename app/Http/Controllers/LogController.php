@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Promise\Utils;
 
 class LogController extends Controller
 {
@@ -49,12 +50,12 @@ class LogController extends Controller
             return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
         }
 
-        // Obtain API token synchronously
+        // Obtain API token
         $apiToken = session('api_token');
         if (!$apiToken) {
             $apiToken = $this->getApiToken();
             if (!$apiToken) {
-                $errors = ['Unable to authenticate with the API. Please try again later.'];
+                $errors[] = 'Unable to authenticate with the API. Please try again later.';
                 return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
             }
         }
@@ -63,9 +64,9 @@ class LogController extends Controller
             $client = new Client([
                 'verify' => false,
                 'timeout' => 10,
-                'stream' => true,
-                'http_errors' => false, // Disable throwing exceptions on HTTP errors
+                'http_errors' => false,
             ]);
+
             $promises = [];
 
             if ($hasMasukParams) {
@@ -90,15 +91,16 @@ class LogController extends Controller
                 $promises['keluar'] = $this->getLogPromise($client, $apiToken, $formParamsKeluar);
             }
 
-            // Wait for all promises to settle
-            $results = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+            // Tunggu semua promise selesai
+            $results = Utils::settle($promises)->wait();
 
             // Process Masuk Logs
             if (isset($results['masuk'])) {
                 if ($results['masuk']['state'] === 'fulfilled') {
                     $response = $results['masuk']['value'];
                     if ($response->getStatusCode() === 200) {
-                        $dataMasuk = json_decode($response->getBody(), true);
+                        $body = $response->getBody()->getContents();
+                        $dataMasuk = json_decode($body, true);
                     } else {
                         $errors[] = 'Failed to fetch Log Masuk: ' . $response->getReasonPhrase();
                     }
@@ -112,7 +114,8 @@ class LogController extends Controller
                 if ($results['keluar']['state'] === 'fulfilled') {
                     $response = $results['keluar']['value'];
                     if ($response->getStatusCode() === 200) {
-                        $dataKeluar = json_decode($response->getBody(), true);
+                        $body = $response->getBody()->getContents();
+                        $dataKeluar = json_decode($body, true);
                     } else {
                         $errors[] = 'Failed to fetch Log Keluar: ' . $response->getReasonPhrase();
                     }
@@ -131,19 +134,19 @@ class LogController extends Controller
 
     protected function getLogPromise(Client $client, $apiToken, array $formParams, $retry = true)
     {
-        // Create a unique cache key based on form parameters
         $cacheKey = 'logMahasiswa_' . md5(json_encode($formParams));
 
-        // If data exists in cache, return a fulfilled promise with cached data
+        // Jika data ada di cache, langsung return promise yang telah terpenuhi
         if (Cache::has($cacheKey)) {
-            return \GuzzleHttp\Promise\Create::promiseFor(new \GuzzleHttp\Psr7\Response(
-                200,
-                ['Content-Type' => 'application/json'],
-                json_encode(Cache::get($cacheKey))
-            ));
+            return \GuzzleHttp\Promise\Create::promiseFor(
+                new \GuzzleHttp\Psr7\Response(
+                    200,
+                    ['Content-Type' => 'application/json'],
+                    json_encode(Cache::get($cacheKey))
+                )
+            );
         }
 
-        // If not cached, make an asynchronous API request
         return $client->postAsync('https://cis-dev.del.ac.id/api/statistik-api/get-total-log-mhs', [
             'headers' => [
                 'Authorization' => "Bearer $apiToken",
@@ -153,58 +156,50 @@ class LogController extends Controller
         ])->then(
                 function ($response) use ($cacheKey, $formParams, $client, &$apiToken, $retry) {
                     if ($response->getStatusCode() === 200) {
-                        $data = json_decode($response->getBody(), true);
+                        $body = $response->getBody()->getContents();
+                        $data = json_decode($body, true);
 
-                        // Cache the data only if the result is 'OK'
+                        // Cache jika result = OK
                         if (isset($data['result']) && $data['result'] === 'OK') {
-                            Cache::put($cacheKey, $data, 300); // Cache for 5 minutes
+                            Cache::put($cacheKey, $data, 300); // cache 5 menit
                         }
 
-                        return $response;
+                        return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], $body);
                     } elseif ($response->getStatusCode() === 401 && $retry) {
-                        // Token might have expired, attempt to refresh it
+                        // Token kadaluarsa, coba refresh
                         Log::warning('API token expired. Attempting to refresh token.');
-
                         $newApiToken = $this->getApiToken();
                         if ($newApiToken) {
-                            // Retry the request with the new token
                             return $client->postAsync('https://cis-dev.del.ac.id/api/statistik-api/get-total-log-mhs', [
                                 'headers' => [
                                     'Authorization' => "Bearer $newApiToken",
                                     'Accept' => 'application/json',
                                 ],
                                 'query' => $formParams,
-                            ])->then(
-                                    function ($newResponse) use ($cacheKey) {
+                            ])->then(function ($newResponse) use ($cacheKey) {
                                 if ($newResponse->getStatusCode() === 200) {
-                                    $data = json_decode($newResponse->getBody(), true);
+                                    $body = $newResponse->getBody()->getContents();
+                                    $data = json_decode($body, true);
 
-                                    // Cache the data only if the result is 'OK'
                                     if (isset($data['result']) && $data['result'] === 'OK') {
-                                        Cache::put($cacheKey, $data, 300); // Cache for 5 minutes
+                                        Cache::put($cacheKey, $data, 300);
                                     }
 
-                                    return $newResponse;
+                                    return new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'application/json'], $body);
                                 }
-
-                                // If still unauthorized, return the original response
                                 return $newResponse;
-                            }
-                                );
+                            });
                         } else {
-                            // Unable to refresh token
                             Log::error('Failed to refresh API token.');
                             return $response;
                         }
                     }
 
-                    // For other status codes, return the response as is
                     return $response;
                 },
                 function ($exception) {
-                    // Handle network or other errors
                     Log::error('Network or other error during API request:', ['message' => $exception->getMessage()]);
-                    throw $exception; // Let the exception propagate
+                    throw $exception;
                 }
             );
     }
@@ -216,8 +211,7 @@ class LogController extends Controller
             $client = new Client([
                 'verify' => false,
                 'timeout' => 10,
-                'stream' => true,
-                'http_errors' => false, // Disable throwing exceptions on HTTP errors
+                'http_errors' => false,
             ]);
 
             $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
