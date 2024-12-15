@@ -4,7 +4,7 @@
   <!-- Left side: Logo and Title -->
   <div class="flex items-center">
     <img src="Logo.png" alt="Logo" class="h-10 w-10 mr-3">
-    <h1>Del Statistics</h1>
+    <h1>Dashboard Wali</h1>
   </div>
 
   <!-- Right side: Links -->

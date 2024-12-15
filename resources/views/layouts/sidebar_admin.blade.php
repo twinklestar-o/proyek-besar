@@ -15,28 +15,18 @@
         integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0=" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.min.css"
         integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigin="anonymous">
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .note-editable {
-            height: 100% !important;
-        }
+        /* Extend Tailwind default configuration */
+        @layer utilities {
+            .bg-yellow-default {
+                @apply bg-yellow-400 text-black;
+            }
 
-        .floating-edit-btn {
-            position: fixed;
-            top: 60px;
-            /* Distance from the top */
-            right: 20px;
-            /* Distance from the right */
-            z-index: 1000;
-            /* Ensure it's above other elements */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .floating-edit-btn button {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .floating-edit-btn button:hover {
-            transform: scale(1.1);
+            .hover\:bg-yellow-hover:hover {
+                @apply bg-yellow-500 text-black;
+            }
         }
     </style>
 
@@ -183,10 +173,11 @@
         </aside>
 
         <main class="app-main">
-            <div id="floatingEditButton" class="floating-edit-btn">
-                <button id="editButton" class="btn btn-light px-2 py-1">
-                    <i id="editIcon" class="bi bi-pencil" style="color: orange;"></i>
-                    <span id="editText" class="ms-2" style="color: orange;">Edit</span>
+            <!-- Floating Edit Button -->
+            <div id="floatingEditButton" class="fixed top-16 right-5 z-50 shadow-lg rounded-full">
+                <button id="editButton" class="p-2 bg-white rounded-full shadow hover:scale-110 transition-transform">
+                    <i id="editIcon" class="bi bi-pencil text-orange-500"></i>
+                    <span id="editText" class="text-orange-500">Edit</span>
                 </button>
             </div>
             @yield('content')
@@ -200,17 +191,21 @@
             </strong>
         </footer>
     </div>
-    <script src="https://pkm.sman1balige.delcom.org/assets/vendor/jquery-3.5.1/dist/jquery.min.js"></script>
-    <script
-        src="https://pkm.sman1balige.delcom.org/assets/vendor/overlayscrollbars-2.3.0/browser/overlayscrollbars.browser.es6.min.js">
-        </script>
-    <script src="https://pkm.sman1balige.delcom.org/assets/vendor/core-2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://pkm.sman1balige.delcom.org/assets/vendor/bootstrap-5.3.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
     <script src="https://pkm.sman1balige.delcom.org/assets/vendor/adminlte-4.0.0/js/adminlte.min.js"></script>
-    <script src="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-2.1.2/js/dataTables.min.js"></script>
-    <script
-        src="https://pkm.sman1balige.delcom.org/assets/vendor/datatables.net-bs5-2.1.2/js/dataTables.bootstrap5.min.js">
-        </script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css">
+
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/2.1.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+
+
     <script>
         const SELECTOR_SIDEBAR_WRAPPER = ".sidebar-wrapper";
         const Default = {
