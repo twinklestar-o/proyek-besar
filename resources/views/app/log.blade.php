@@ -5,6 +5,9 @@
   <!-- Log Mahasiswa Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Log Keluar/Masuk Mahasiswa</h1>
+    <p class="text-gray-600 mb-4">
+      Log Keluar/Masuk Mahasiswa mencatat semua aktivitas mahasiswa saat memasuki atau meninggalkan kampus. Informasi ini memungkinkan pemantauan kehadiran mahasiswa secara real-time, serta memberikan gambaran mengenai pola mobilitas mahasiswa di lingkungan kampus.
+    </p>
 
     <!-- Filter Form -->
     <form id="filterForm" method="GET"

@@ -22,6 +22,9 @@
   <!-- Total Mahasiswa Aktif Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8 editable">
     <h1 class="text-2xl font-bold text-gray-800 mb-4"> Total Mahasiswa Aktif</h1>
+    <p class="text-gray-600 mb-4">
+      Total Mahasiswa Aktif memberikan informasi mengenai jumlah total mahasiswa aktif yang terdaftar di institusi. Dari dashboard ini, dapat dilihat grafik persebaran mahasiswa setiap angkatan dan setiap prodi. Data spesifik untuk prodi dan angkatan tertentu juga dapat diakses untuk analisis lebih mendalam.
+    </p>
 
     <!-- Filter form for angkatan and prodi -->
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
@@ -291,6 +294,54 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const barColors = ["royalblue", "royalblue", "royalblue"];
+    const prodiNames = @json(array_keys($dataMahasiswa)); // Ambil nama prodi
+    const prodiCounts = @json(array_values($dataMahasiswa)); // Ambil jumlah mahasiswa
+
+    function updateChart() {
+      const jlhMahasiswa = prodiCounts.filter((_, index) => prodiNames[index] !== 'total'); // Filter untuk mengabaikan 'total'
+
+      if (semuaProdiAngkatanChart) {
+        semuaProdiAngkatanChart.destroy();
+      }
+
+      semuaProdiAngkatanChart = new Chart("semuaProdiAngkatanChart", {
+        type: "bar",
+        data: {
+          labels: prodiNames.filter(name => name !== 'total'), // Ambil nama prodi tanpa 'total'
+          datasets: [
+            {
+              label: 'Jumlah Mahasiswa per Prodi',
+              backgroundColor: barColors,
+              data: jlhMahasiswa
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Jumlah Mahasiswa per Prodi"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    let semuaProdiAngkatanChart;
+    updateChart();
+  });
+</script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const semester = ["Ganjil", "Genap"];

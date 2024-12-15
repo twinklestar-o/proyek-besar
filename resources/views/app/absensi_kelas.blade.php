@@ -4,6 +4,9 @@
 <div class="container mx-auto px-4 py-8">
   <div class="bg-white shadow rounded-lg p-6 mb-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Kelas</h1>
+    <p class="text-gray-600 mb-4">
+      Absensi Kelas mencatat kehadiran mahasiswa dalam setiap sesi perkuliahan. Data ini memberikan gambaran mengenai partisipasi mahasiswa dalam proses belajar mengajar, serta membantu dalam evaluasi keterlibatan akademik mereka.
+    </p>
 
     <!-- Filter Form -->
     <form id="filterForm" class="mb-4 space-y-4">

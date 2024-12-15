@@ -18,6 +18,9 @@
   <!-- Pelanggaran Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Data Pelanggaran Asrama</h1>
+    <p class="text-gray-600 mb-4">
+      Data Pelanggaran Asrama mencatat semua pelanggaran yang dilakukan oleh mahasiswa selama tinggal di asrama. Ini termasuk pelanggaran terhadap aturan asrama, seperti kebisingan atau membawa tamu tanpa izin. Informasi ini penting untuk menjaga disiplin dan menciptakan lingkungan yang aman bagi semua penghuni asrama.
+    </p>
 
     <!-- Filter Form -->
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'pelanggaran.auth' : 'pelanggaran.public') }}"

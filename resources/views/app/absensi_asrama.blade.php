@@ -5,6 +5,9 @@
   <!-- Absensi Asrama Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Asrama</h1>
+    <p class="text-gray-600 mb-4">
+      Absensi Asrama mencatat kehadiran mahasiswa di asrama selama periode tertentu. Data ini penting untuk memastikan bahwa mahasiswa mematuhi aturan tinggal di asrama dan untuk menjaga keamanan. Informasi ini juga dapat digunakan untuk mengidentifikasi mahasiswa yang sering tidak hadir dan memberikan dukungan yang diperlukan.
+    </pc>
 
     <!-- Menampilkan Error Jika Ada -->
     @if(isset($errors) && count($errors) > 0)
