@@ -65,6 +65,10 @@
       </div>
     </form>
 
+    <div class="w-full" style="width: 80%;">
+      <canvas id="logKeluarMasukChart" style="width: 100%;"></canvas>
+    </div>
+
     <!-- Display Data -->
     <div class="mt-4">
       @if(isset($dataMasuk) || isset($dataKeluar))
@@ -277,4 +281,67 @@
     }
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const type = ["Masuk", "Keluar"];
+
+    let logKeluarMasukChart;
+
+    function updateChart(chartType = "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}") {
+      const Masuk = {{ $dataMasuk['total'] ?? '0' }};
+      const Keluar = {{ $dataKeluar['total'] ?? '0' }};
+      const jlhAbsensi = [Masuk, Keluar];
+
+      const maxValue = Math.max(...jlhAbsensi);
+      const gap = maxValue;
+      const yMax = maxValue + gap;
+
+      if (logKeluarMasukChart) {
+        logKeluarMasukChart.destroy();
+      }
+
+      logKeluarMasukChart = new Chart("logKeluarMasukChart", {
+        type: chartType,
+        data: {
+          labels: type,
+          datasets: [
+            {
+              label: 'Jumlah Mahasiswa yang Absen',
+              backgroundColor: 'royalblue',
+              data: jlhAbsensi
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Jumlah Absensi"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: yMax
+            }
+          }
+        }
+      });
+    }
+
+    // Inisialisasi chart dengan jenis yang benar
+    updateChart();
+
+    // Event listener untuk live preview saat dropdown chart type berubah
+    const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
+    if (chartTypeSelectAbsensi) {
+      chartTypeSelectAbsensi.addEventListener("change", function () {
+        updateChart(this.value);
+      });
+    }
+  });
+</script>
+
 @endsection
