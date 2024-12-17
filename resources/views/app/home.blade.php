@@ -74,6 +74,17 @@
                 <div class="flex justify-center mb-5">
                     <div class="w-full" style="width: 80%;">
                         <canvas id="semuaProdiAngkatanChart" style=" width: 100%;"></canvas>
+                        <!-- Dropdown chart type -->
+                        <div class="chart-type-selector mt-2" style="display:none;">
+                            <label for="chartType_total_mahasiswa_aktif" class="block mb-1 font-semibold">Jenis Chart:</label>
+                            <select id="chartType_total_mahasiswa_aktif" data-section="total_mahasiswa_aktif"
+                                data-field="chart_type"
+                                class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                                <option value="bar" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                                <option value="line" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                                <option value="pie" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -107,35 +118,78 @@
                         @endforeach
 
                         const ctxSemuaProdiAngkatan = document.getElementById('semuaProdiAngkatanChart').getContext('2d');
+                        const chartType = "{{ $sections['total_mahasiswa_aktif']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+                        // Definisikan warna yang berbeda untuk setiap prodi
+                        const backgroundColors = [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(199, 199, 199, 0.2)'
+                        ];
+
+                        const borderColors = [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)'
+                        ];
+
+                        // Jika chart type adalah pie, sesuaikan beberapa opsi
+                        const optionsChart = {};
+                        if (chartType === 'pie') {
+                            optionsChart.plugins = {
+                                legend: { display: true },
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
+                                }
+                            };
+                        } else {
+                            optionsChart.plugins = {
+                                legend: { display: true },
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
+                                }
+                            };
+                            optionsChart.scales = {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    },
+                                    grid: {
+                                        display: true
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: true
+                                    }
+                                }
+                            };
+                        }
+
                         const semuaProdiAngkatanChart = new Chart(ctxSemuaProdiAngkatan, {
-                            type: 'bar',
+                            type: chartType,
                             data: {
                                 labels: prodiLabels,
                                 datasets: [{
                                     label: 'Jumlah Mahasiswa per Prodi',
                                     data: prodiCounts,
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(54, 162, 235, 1)',
                                     borderWidth: 1
                                 }]
                             },
-                            options: {
-                                plugins: {
-                                    legend: { display: true },
-                                    title: {
-                                        display: true,
-                                        text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
-                                    }
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            precision: 0
-                                        }
-                                    }
-                                }
-                            }
+                            options: optionsChart
                         });
                     });
                 </script>
@@ -149,6 +203,16 @@
                 <div class="flex justify-center mb-5">
                     <div class="w-full" style="width: 80%;">
                         <canvas id="semuaAngkatanChart" style=" width: 100%;"></canvas>
+                        <!-- Dropdown chart type -->
+                        <div class="chart-type-selector mt-2" style="display:none;">
+                            <label for="chartType_prestasi" class="block mb-1 font-semibold">Jenis Chart:</label>
+                            <select id="chartType_prestasi" data-section="prestasi" data-field="chart_type"
+                                class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                                <option value="bar" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                                <option value="line" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                                <option value="pie" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -169,36 +233,78 @@
                     const angkatanData = @json($dataMahasiswa); // Ambil data angkatan
                     const angkatanLabels = Object.keys(angkatanData); // Ambil label angkatan
                     const angkatanCounts = Object.values(angkatanData); // Ambil jumlah mahasiswa per angkatan
+                    const chartType = "{{ $sections['prestasi']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+                    // Definisikan warna yang berbeda untuk setiap angkatan
+                    const backgroundColors = [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(199, 199, 199, 0.2)'
+                    ];
+
+                    const borderColors = [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ];
+
+                    // Jika chart type adalah pie, sesuaikan beberapa opsi
+                    const optionsChart = {};
+                    if (chartType === 'pie') {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
+                            }
+                        };
+                    } else {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
+                            }
+                        };
+                        optionsChart.scales = {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                },
+                                grid: {
+                                    display: true
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: true
+                                }
+                            }
+                        };
+                    }
 
                     const semuaAngkatanChart = new Chart("semuaAngkatanChart", {
-                        type: "bar",
+                        type: chartType,
                         data: {
                             labels: angkatanLabels,
                             datasets: [{
                                 label: 'Jumlah Mahasiswa per Angkatan',
-                                backgroundColor: angkatanLabels.map(label => label === '{{ $angkatan }}' ? 'rgba(255, 99, 132, 0.2)' : 'rgba(54, 162, 235, 0.2)'),
-                                borderColor: angkatanLabels.map(label => label === '{{ $angkatan }}' ? 'rgba(255, 99, 132, 1)' : 'rgba(54, 162, 235, 1)'),
-                                borderWidth: 1,
-                                data: angkatanCounts
+                                data: angkatanCounts,
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, angkatanLabels.length) : 'rgba(75, 192, 192, 0.2)',
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, angkatanLabels.length) : 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
                             }]
                         },
-                        options: {
-                            plugins: {
-                                legend: { display: true },
-                                title: {
-                                    display: true,
-                                    text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        precision: 0
-                                    }
-                                }
-                            }
-                        }
+                        options: optionsChart
                     });
                 });
             </script>
@@ -210,6 +316,17 @@
                 <div class="flex justify-center mb-5">
                     <div class="w-full" style="width: 80%;">
                         <canvas id="semuaProdiChart" style=" width: 100%;"></canvas>
+                        <!-- Dropdown chart type -->
+                        <div class="chart-type-selector mt-2" style="display:none;">
+                            <label for="chartType_kegiatan_luar_kampus" class="block mb-1 font-semibold">Jenis Chart:</label>
+                            <select id="chartType_kegiatan_luar_kampus" data-section="kegiatan_luar_kampus"
+                                data-field="chart_type"
+                                class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                                <option value="bar" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                                <option value="line" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                                <option value="pie" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -230,36 +347,78 @@
                     const prodiData = @json($dataMahasiswa); // Ambil data prodi
                     const prodiLabels = Object.keys(prodiData); // Ambil label prodi
                     const prodiCounts = Object.values(prodiData); // Ambil jumlah mahasiswa per prodi
+                    const chartType = "{{ $sections['kegiatan_luar_kampus']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+                    // Definisikan warna yang berbeda untuk setiap prodi
+                    const backgroundColors = [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(199, 199, 199, 0.2)'
+                    ];
+
+                    const borderColors = [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ];
+
+                    // Jika chart type adalah pie, sesuaikan beberapa opsi
+                    const optionsChart = {};
+                    if (chartType === 'pie') {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: "Jumlah Mahasiswa per Prodi untuk Angkatan {{ $angkatan }}"
+                            }
+                        };
+                    } else {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: "Jumlah Mahasiswa per Prodi untuk Angkatan {{ $angkatan }}"
+                            }
+                        };
+                        optionsChart.scales = {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                },
+                                grid: {
+                                    display: true
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: true
+                                }
+                            }
+                        };
+                    }
 
                     const semuaProdiChart = new Chart("semuaProdiChart", {
-                        type: "bar",
+                        type: chartType,
                         data: {
                             labels: prodiLabels,
                             datasets: [{
                                 label: 'Jumlah Mahasiswa per Prodi',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                data: prodiCounts
+                                data: prodiCounts,
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(75, 192, 192, 0.2)',
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
                             }]
                         },
-                        options: {
-                            plugins: {
-                                legend: { display: true },
-                                title: {
-                                    display: true,
-                                    text: "Jumlah Mahasiswa per Prodi untuk Angkatan {{ $angkatan }}"
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        precision: 0
-                                    }
-                                }
-                            }
-                        }
+                        options: optionsChart
                     });
                 });
             </script>
@@ -278,37 +437,109 @@
         @elseif(isset($dataMahasiswa['total']))
             <!-- Default Total Mahasiswa Aktif -->
             <h2 class="text-lg font-bold">Total Mahasiswa Aktif</h2>
+            <p class="text-gray-600 mb-4 editable" data-section="total_mahasiswa_aktif" data-field="description">
+                {!! $sections['total_mahasiswa_aktif']->description ?? 'Deskripsi Default' !!}
+            </p>
+
+            <!-- Inisialisasi Chart untuk Total Mahasiswa Aktif -->
+            <div class="flex justify-center mb-5">
+                <div class="w-full" style="width: 80%;">
+                    <canvas id="totalMahasiswaAktifChart" class="mt-6"></canvas>
+                    <!-- Dropdown chart type -->
+                    <div class="chart-type-selector mt-2" style="display:none;">
+                        <label for="chartType_total_mahasiswa_aktif_single" class="block mb-1 font-semibold">Jenis
+                            Chart:</label>
+                        <select id="chartType_total_mahasiswa_aktif_single" data-section="total_mahasiswa_aktif"
+                            data-field="chart_type"
+                            class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                            <option value="bar" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                            <option value="line" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                            <option value="pie" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <p class="text-green-600 font-semibold">
                 Total Mahasiswa Aktif: {{ $dataMahasiswa['total'] }}
             </p>
 
-            <!-- Inisialisasi Chart untuk Total Mahasiswa Aktif -->
-            <canvas id="totalMahasiswaAktifChart" class="mt-6"></canvas>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     const ctxTotal = document.getElementById('totalMahasiswaAktifChart').getContext('2d');
+                    const chartType = "{{ $sections['total_mahasiswa_aktif']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+                    const totalCount = {{ $dataMahasiswa['total'] ?? 0 }};
+
+                    // Definisikan warna yang berbeda jika chart type adalah pie
+                    const backgroundColors = [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(199, 199, 199, 0.2)'
+                    ];
+
+                    const borderColors = [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ];
+
+                    // Jika chart type adalah pie, sesuaikan beberapa opsi
+                    const optionsChart = {};
+                    if (chartType === 'pie') {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: 'Total Mahasiswa Aktif'
+                            }
+                        };
+                    } else {
+                        optionsChart.plugins = {
+                            legend: { display: true },
+                            title: {
+                                display: true,
+                                text: 'Total Mahasiswa Aktif'
+                            }
+                        };
+                        optionsChart.scales = {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                },
+                                grid: {
+                                    display: true
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: true
+                                }
+                            }
+                        };
+                    }
+
                     const totalChart = new Chart(ctxTotal, {
-                        type: 'bar',
+                        type: chartType,
                         data: {
                             labels: ['Mahasiswa Aktif'],
                             datasets: [{
                                 label: 'Total Mahasiswa Aktif',
-                                data: ['{{ $dataMahasiswa['total'] ?? 0 }}'],
-                                backgroundColor: ['rgba(75, 192, 192, 0.2)'],
-                                borderColor: ['rgba(75, 192, 192, 1)'],
+                                data: [totalCount],
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, 1) : ['rgba(75, 192, 192, 0.2)'],
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, 1) : ['rgba(75, 192, 192, 1)'],
                                 borderWidth: 1
                             }]
                         },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        precision: 0
-                                    }
-                                }
-                            }
-                        }
+                        options: optionsChart
                     });
                 });
             </script>
@@ -345,6 +576,26 @@
                     style="{{ request('waktu') == 'semester' ? 'display: none;' : '' }}"></canvas>
                 <canvas id="prestasiSemester"
                     style="{{ request('waktu') == 'semester' ? '' : 'display: none;' }}"></canvas>
+                <!-- Dropdown chart type for Prestasi Tahun -->
+                <div class="chart-type-selector mt-2" style="display:none;">
+                    <label for="chartType_prestasi_tahun" class="block mb-1 font-semibold">Jenis Chart:</label>
+                    <select id="chartType_prestasi_tahun" data-section="prestasi" data-field="chart_type"
+                        class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                        <option value="bar" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                        <option value="line" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                        <option value="pie" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                    </select>
+                </div>
+                <!-- Dropdown chart type for Prestasi Semester -->
+                <div class="chart-type-selector mt-2" style="display:none;">
+                    <label for="chartType_prestasi_semester" class="block mb-1 font-semibold">Jenis Chart:</label>
+                    <select id="chartType_prestasi_semester" data-section="prestasi" data-field="chart_type"
+                        class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                        <option value="bar" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                        <option value="line" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                        <option value="pie" {{ ($sections['prestasi']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -409,6 +660,17 @@
         <div class="flex justify-center mb-5">
             <div class="w-full" style="width: 80%;">
                 <canvas id="jlhMahasiswaKegiatanChart"></canvas>
+                <!-- Dropdown chart type -->
+                <div class="chart-type-selector mt-2" style="display:none;">
+                    <label for="chartType_jlhMahasiswaKegiatan" class="block mb-1 font-semibold">Jenis Chart:</label>
+                    <select id="chartType_jlhMahasiswaKegiatan" data-section="kegiatan_luar_kampus"
+                        data-field="chart_type"
+                        class="chart-type-dropdown bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring">
+                        <option value="bar" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'bar' ? 'selected' : '' }}>Bar</option>
+                        <option value="line" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'line' ? 'selected' : '' }}>Line</option>
+                        <option value="pie" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') === 'pie' ? 'selected' : '' }}>Pie</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
@@ -422,42 +684,77 @@
         const prestasiTahunCanvas = document.getElementById('prestasiTahun');
         if (prestasiTahunCanvas) {
             const dummyPrestasiTahunData = [137, 145, 137, 159, 156, 151]; // Data Dummy
+            const chartTypePrestasiTahun = "{{ $sections['prestasi']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+            // Definisikan warna yang berbeda untuk setiap dataset jika diperlukan
+            const backgroundColors = [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)'
+            ];
+
+            const borderColors = [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)'
+            ];
+
+            // Jika chart type adalah pie, sesuaikan beberapa opsi
+            const optionsChart = {};
+            if (chartTypePrestasiTahun === 'pie') {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Prestasi/Tahun'
+                    }
+                };
+            } else {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Prestasi/Tahun'
+                    }
+                };
+                optionsChart.scales = {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            display: true
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: true
+                        }
+                    }
+                };
+            }
+
             const prestasiTahunChart = new Chart(prestasiTahunCanvas, {
-                type: 'bar',
+                type: chartTypePrestasiTahun,
                 data: {
                     labels: @json($angkatanYears),
                     datasets: [
                         {
                             label: 'Akademik',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            data: dummyPrestasiTahunData
+                            data: dummyPrestasiTahunData,
+                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(54, 162, 235, 0.2)',
+                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
                         },
                         {
                             label: 'Non-Akademik',
-                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1,
-                            data: [17, 15, 13, 19, 16, 21] // Data Dummy
+                            data: [17, 15, 13, 19, 16, 21], // Data Dummy
+                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(201, 203, 207, 0.2)',
+                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, 2) : 'rgba(201, 203, 207, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
-                options: {
-                    plugins: {
-                        legend: { display: true },
-                        title: {
-                            display: true,
-                            text: 'Jumlah Prestasi/Tahun'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
-                        }
-                    }
-                }
+                options: optionsChart
             });
         }
 
@@ -465,42 +762,77 @@
         const prestasiSemesterCanvas = document.getElementById('prestasiSemester');
         if (prestasiSemesterCanvas) {
             const dummyPrestasiSemesterData = [43, 45]; // Data Dummy
+            const chartTypePrestasiSemester = "{{ $sections['prestasi']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+            // Definisikan warna yang berbeda untuk setiap dataset jika diperlukan
+            const backgroundColors = [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(201, 203, 207, 0.2)'
+            ];
+
+            const borderColors = [
+                'rgba(75, 192, 192, 1)',
+                'rgba(201, 203, 207, 1)'
+            ];
+
+            // Jika chart type adalah pie, sesuaikan beberapa opsi
+            const optionsChart = {};
+            if (chartTypePrestasiSemester === 'pie') {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Prestasi/Semester'
+                    }
+                };
+            } else {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: 'Jumlah Prestasi/Semester'
+                    }
+                };
+                optionsChart.scales = {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            display: true
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: true
+                        }
+                    }
+                };
+            }
+
             const prestasiSemesterChart = new Chart(prestasiSemesterCanvas, {
-                type: 'bar',
+                type: chartTypePrestasiSemester,
                 data: {
                     labels: ["Ganjil", "Genap"],
                     datasets: [
                         {
                             label: 'Akademik',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                            data: dummyPrestasiSemesterData
+                            data: dummyPrestasiSemesterData,
+                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(75, 192, 192, 0.2)',
+                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
                         },
                         {
                             label: 'Non-Akademik',
-                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1,
-                            data: [4, 5] // Data Dummy
+                            data: [4, 5], // Data Dummy
+                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(201, 203, 207, 0.2)',
+                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, 2) : 'rgba(201, 203, 207, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
-                options: {
-                    plugins: {
-                        legend: { display: true },
-                        title: {
-                            display: true,
-                            text: 'Jumlah Prestasi/Semester'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
-                        }
-                    }
-                }
+                options: optionsChart
             });
         }
 
@@ -508,33 +840,74 @@
         const kegiatanCanvas = document.getElementById('jlhMahasiswaKegiatanChart');
         if (kegiatanCanvas) {
             const dummyKegiatanData = [137, 145, 137, 159, 156]; // Data Dummy
+            const chartTypeKegiatan = "{{ $sections['kegiatan_luar_kampus']->chart_type ?? 'bar' }}"; // Ambil jenis chart dari database
+
+            // Definisikan warna yang berbeda untuk setiap kegiatan
+            const backgroundColors = [
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(75, 192, 192, 0.2)'
+            ];
+
+            const borderColors = [
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(75, 192, 192, 1)'
+            ];
+
+            // Jika chart type adalah pie, sesuaikan beberapa opsi
+            const optionsChart = {};
+            if (chartTypeKegiatan === 'pie') {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
+                    }
+                };
+            } else {
+                optionsChart.plugins = {
+                    legend: { display: true },
+                    title: {
+                        display: true,
+                        text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
+                    }
+                };
+                optionsChart.scales = {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            display: true
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: true
+                        }
+                    }
+                };
+            }
+
             const kegiatanChart = new Chart(kegiatanCanvas, {
-                type: 'bar',
+                type: chartTypeKegiatan,
                 data: {
                     labels: ["MBKM", "IISMA", "Kerja Praktik", "Studi Independent", "Pertukaran Pelajar"],
                     datasets: [{
                         label: 'Jumlah Mahasiswa',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1,
-                        data: dummyKegiatanData
+                        data: dummyKegiatanData,
+                        backgroundColor: chartTypeKegiatan === 'pie' ? backgroundColors.slice(0, dummyKegiatanData.length) : 'rgba(153, 102, 255, 0.2)',
+                        borderColor: chartTypeKegiatan === 'pie' ? borderColors.slice(0, dummyKegiatanData.length) : 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
                     }]
                 },
-                options: {
-                    plugins: {
-                        legend: { display: true },
-                        title: {
-                            display: true,
-                            text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
-                        }
-                    }
-                }
+                options: optionsChart
             });
         }
     });
@@ -548,6 +921,8 @@
         const editIcon = document.getElementById("editIcon");
         const editText = document.getElementById("editText");
         const editableElements = document.querySelectorAll(".editable");
+        const chartTypeDropdowns = document.querySelectorAll(".chart-type-dropdown");
+
         let isEditing = false;
 
         // Object to track changes per section and field
@@ -556,21 +931,19 @@
         editButton.addEventListener("click", () => {
             isEditing = !isEditing;
 
-            // Toggle contentEditable for editable elements
+            // Toggle contentEditable for editable elements (text/title/description)
             editableElements.forEach((element) => {
                 if (isEditing) {
-                    // Enable edit mode
                     element.contentEditable = true;
                     element.style.border = "1px dashed gray";
 
-                    // Initialize changes object for the section if not present
                     const sectionKey = element.getAttribute("data-section");
                     const fieldKey = element.getAttribute("data-field");
                     if (!changes[sectionKey]) {
                         changes[sectionKey] = {};
                     }
 
-                    // Store original value if not already stored
+                    // Store original values
                     if (!changes[sectionKey].original) {
                         changes[sectionKey].original = {};
                     }
@@ -579,17 +952,50 @@
                     }
 
                 } else {
-                    // Disable edit mode
                     element.contentEditable = false;
                     element.style.border = "none";
 
-                    // Check for changes
                     const sectionKey = element.getAttribute("data-section");
                     const fieldKey = element.getAttribute("data-field");
                     const updatedValue = element.innerHTML.trim();
 
                     if (changes[sectionKey].original[fieldKey] !== updatedValue) {
-                        // Store updated value
+                        if (!changes[sectionKey].updated) {
+                            changes[sectionKey].updated = {};
+                        }
+                        changes[sectionKey].updated[fieldKey] = updatedValue;
+                    }
+                }
+            });
+
+            // Toggle chartTypeDropdowns
+            chartTypeDropdowns.forEach((dropdown) => {
+                const sectionKey = dropdown.getAttribute("data-section");
+                const fieldKey = dropdown.getAttribute("data-field");
+                if (isEditing) {
+                    // Show and enable dropdown
+                    dropdown.parentElement.style.display = "block";
+                    dropdown.disabled = false;
+
+                    // Store original chart_type if not stored
+                    if (!changes[sectionKey]) {
+                        changes[sectionKey] = {};
+                    }
+                    if (!changes[sectionKey].original) {
+                        changes[sectionKey].original = {};
+                    }
+                    if (!changes[sectionKey].original[fieldKey]) {
+                        changes[sectionKey].original[fieldKey] = dropdown.value;
+                    }
+
+                } else {
+                    // Hide dropdown after done if needed
+                    // Atur ulang display dan disable dropdown
+                    dropdown.disabled = true;
+                    // dropdown.parentElement.style.display = "none"; // Jika ingin disembunyikan setelah done
+
+                    const updatedValue = dropdown.value;
+                    if (changes[sectionKey].original[fieldKey] !== updatedValue) {
                         if (!changes[sectionKey].updated) {
                             changes[sectionKey].updated = {};
                         }
@@ -611,7 +1017,7 @@
             }
         });
 
-        // Handle Enter key for inserting <br> in edit mode
+        // Handle Enter key in editable elements
         editableElements.forEach((element) => {
             element.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
@@ -620,12 +1026,10 @@
                     if (!selection.rangeCount) return;
                     const range = selection.getRangeAt(0);
 
-                    // Insert <br> at cursor position
                     const br = document.createElement("br");
                     range.deleteContents();
                     range.insertNode(br);
 
-                    // Move cursor after <br>
                     range.setStartAfter(br);
                     range.collapse(true);
                     selection.removeAllRanges();
