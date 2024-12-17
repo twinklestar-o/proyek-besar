@@ -138,24 +138,25 @@
 
       <!-- Chart -->
       <div id="chartSection" style="display: none;">
-        <div class="flex justify-center mb-5">
-          <div class="sm:w-80">
+        <div class="flex flex-col items-center mb-5">
+          <!-- Dropdown Jenis Chart -->
+          <div id="chartTypeContainerAbsensiKelas" class="hidden mb-4 w-full sm:w-80">
+            <label for="chartTypeAbsensiKelas" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
+            <select id="chartTypeAbsensiKelas"
+              class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+              data-section="absensi_kelas" data-type="chart_type">
+              <option value="bar" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar
+              </option>
+              <option value="line" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
+                Line</option>
+              <option value="pie" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie
+              </option>
+            </select>
+          </div>
+
+          <!-- Kontainer Chart -->
+          <div id="chartContainerAbsensiKelas" class="w-full sm:w-80 transition-all duration-500">
             <canvas id="absensiKelasChart"></canvas>
-            <!-- Setelah elemen Chart -->
-            <div id="chartTypeContainerAbsensiKelas" class="hidden mb-4">
-              <label for="chartTypeAbsensiKelas" class="block text-gray-700 font-semibold mb-2">Pilih Jenis
-                Chart:</label>
-              <select id="chartTypeAbsensiKelas"
-                class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-                data-section="absensi_kelas" data-type="chart_type">
-                <option value="bar" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar
-                </option>
-                <option value="line" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
-                  Line</option>
-                <option value="pie" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie
-                </option>
-              </select>
-            </div>
           </div>
         </div>
       </div>
@@ -195,6 +196,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- jQuery (untuk AJAX) -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 Library -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
   $(document).ready(function () {
     // Variabel untuk menyimpan instance Chart
@@ -285,7 +289,7 @@
             datasets: [
               {
                 label: 'Persentase Kehadiran Mahasiswa',
-                backgroundColor: ["royalblue", "red"],
+                backgroundColor: ["#36A2EB", "#FF6384"], // Warna berbeda untuk pie chart
                 data: jlhKehadiran
               }
             ]
@@ -304,7 +308,9 @@
                   }
                 }
               }
-            }
+            },
+            scales: {}, // Hilangkan skala untuk pie chart
+            maintainAspectRatio: false
           }
         });
       } else {
@@ -331,9 +337,9 @@
 
     // Event handler untuk tombol "Ambil Mata Kuliah"
     $('#ambilMatkul').click(function () {
-      const prodi_id = parseInt($('#prodi_id').val());
-      const semester = parseInt($('#semester').val());
-      const ta = parseInt($('#ta').val());
+      const prodi_id = $('#prodi_id').val();
+      const semester = $('#semester').val();
+      const ta = $('#ta').val();
 
       console.log('Mengambil Mata Kuliah dengan prodi_id:', prodi_id, 'semester:', semester, 'ta:', ta);
 
@@ -441,10 +447,12 @@
     const editIcon = document.getElementById("editIcon");
     const editText = document.getElementById("editText");
     const editableElements = document.querySelectorAll(".editable");
-    const chartTypeContainerTotalMahasiswa = document.getElementById("chartTypeContainerTotalMahasiswa");
-    const chartTypeContainerPrestasi = document.getElementById("chartTypeContainerPrestasi");
-    const chartTypeContainerKegiatanLuar = document.getElementById("chartTypeContainerKegiatanLuar");
-    const chartTypeContainerAbsensiKelas = document.getElementById("chartTypeContainerAbsensiKelas"); // ADD
+    const chartTypeContainers = {
+      totalMahasiswa: document.getElementById("chartTypeContainerTotalMahasiswa"),
+      prestasi: document.getElementById("chartTypeContainerPrestasi"),
+      kegiatanLuar: document.getElementById("chartTypeContainerKegiatanLuar"),
+      absensiKelas: document.getElementById("chartTypeContainerAbsensiKelas") // ADD
+    };
     let isEditing = false;
 
     // Gunakan objek global untuk melacak perubahan
@@ -493,17 +501,10 @@
       });
 
       // Toggle visibility dropdown chart type untuk semua section
-      if (chartTypeContainerTotalMahasiswa) {
-        chartTypeContainerTotalMahasiswa.classList.toggle('hidden', !isEditing);
-      }
-      if (chartTypeContainerPrestasi) {
-        chartTypeContainerPrestasi.classList.toggle('hidden', !isEditing);
-      }
-      if (chartTypeContainerKegiatanLuar) {
-        chartTypeContainerKegiatanLuar.classList.toggle('hidden', !isEditing);
-      }
-      if (chartTypeContainerAbsensiKelas) { // ADD
-        chartTypeContainerAbsensiKelas.classList.toggle('hidden', !isEditing);
+      for (const key in chartTypeContainers) {
+        if (chartTypeContainers[key]) {
+          chartTypeContainers[key].classList.toggle('hidden', !isEditing);
+        }
       }
 
       // Toggle ikon dan teks tombol
@@ -518,6 +519,27 @@
         saveChanges();
       }
     });
+
+    // Event listener untuk perubahan chart_type pada absensi_kelas
+    const chartTypeSelectAbsensiKelas = document.getElementById("chartTypeAbsensiKelas");
+    if (chartTypeSelectAbsensiKelas) {
+      chartTypeSelectAbsensiKelas.addEventListener("change", function () {
+        const selectedChartType = this.value;
+        const sectionKey = this.getAttribute("data-section");
+
+        // Simpan perubahan chart_type
+        if (!window.sectionChanges[sectionKey]) {
+          window.sectionChanges[sectionKey] = {};
+        }
+        window.sectionChanges[sectionKey].updatedChartType = selectedChartType;
+
+        // Update chart secara langsung (preview)
+        if (window.absensiKelasChart) {
+          window.absensiKelasChart.destroy();
+          window.initializeAbsensiKelasChart(selectedChartType);
+        }
+      });
+    }
 
     // Fungsi untuk menyimpan perubahan
     function saveChanges() {
@@ -596,8 +618,8 @@
   });
 </script>
 
-
-<script>$(document).ready(function () {
+<script>
+  $(document).ready(function () {
     function fetchMatkul(prodi_id, semester, ta) {
       $('#loadingMatkul').show();
 
@@ -607,12 +629,16 @@
         data: { prodi_id, semester, ta },
         success: function (response) {
           $('#loadingMatkul').hide();
-          if (response.matkulList && response.matkulList.length > 0) {
+          if (response.matkulList && response.tahunKurikulum) {
             showMatkulAndTahunKurikulum(response.matkulList, response.tahunKurikulum);
-            showTanggalDanAmbilData();
+            showTanggalDanAmbilData(); // Tampilkan bagian tanggal dan tombol setelah Mata Kuliah dimuat
+
+            // Reset Absensi data
+            $('#tabelAbsensiSection').hide();
+            $('#chartSection').hide();
+            $('#pesanTidakAdaData').hide();
           } else {
-            alert('Data Mata Kuliah tidak ditemukan. Memuat ulang API...');
-            fetchMatkul(prodi_id, semester, ta); // Muat ulang API
+            alert('Data Mata Kuliah atau Tahun Kurikulum tidak ditemukan.');
           }
         },
         error: function () {
@@ -634,8 +660,10 @@
           if (response.data && response.data.length > 0) {
             showAbsensiData(response.data);
           } else {
-            alert('Data Absensi tidak ditemukan. Memuat ulang API...');
-            fetchAbsensiData(kode_mk, id_kur, start_time, end_time); // Muat ulang API
+            $('#tabelAbsensiSection').hide();
+            $('#chartSection').hide();
+            $('#pesanTidakAdaData').show();
+            alert('Data Absensi tidak ditemukan.');
           }
         },
         error: function () {
@@ -678,7 +706,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     // Inisialisasi Chart Absensi Kelas dengan jenis chart dinamis
     const absensiKelasCanvas = document.getElementById('absensiKelasChart');
-    let absensiKelasChart;
+    let absensiKelasChart = null;
     let currentChartTypeAbsensiKelas = "{{ $sections['absensi_kelas']->chart_type ?? 'bar' }}";
 
     function initializeAbsensiKelasChart(chartType) {
@@ -687,6 +715,27 @@
       }
 
       const ctxAbsensiKelas = absensiKelasCanvas.getContext('2d');
+
+      // Referensi ke kontainer chart
+      const chartContainerAbsensiKelas = document.getElementById("chartContainerAbsensiKelas");
+
+      // Tentukan warna berdasarkan jenis chart
+      let backgroundColors;
+      if (chartType === 'pie') {
+        backgroundColors = ["#36A2EB", "#FF6384"]; // Warna berbeda untuk pie chart
+      } else {
+        backgroundColors = ["rgba(75, 192, 192, 0.2)", "rgba(255, 99, 132, 0.2)"]; // Warna untuk bar/line chart
+      }
+
+      // Sesuaikan ukuran kontainer berdasarkan jenis chart
+      if (chartType === 'pie') {
+        chartContainerAbsensiKelas.style.width = "60%"; // Perbesar lebar untuk pie chart
+        chartContainerAbsensiKelas.style.height = "500px"; // Perbesar tinggi jika diperlukan
+      } else {
+        chartContainerAbsensiKelas.style.width = "80%"; // Kembali ke lebar semula
+        chartContainerAbsensiKelas.style.height = "400px"; // Kembali ke tinggi semula
+      }
+
       absensiKelasChart = new Chart(ctxAbsensiKelas, {
         type: chartType,
         data: {
@@ -694,8 +743,8 @@
           datasets: [{
             label: 'Persentase Kehadiran Mahasiswa',
             data: [75, 25], // Ganti dengan data dinamis Anda
-            backgroundColor: ["rgba(75, 192, 192, 0.2)", "rgba(255, 99, 132, 0.2)"],
-            borderColor: ["rgba(75, 192, 192, 1)", "rgba(255,99,132,1)"],
+            backgroundColor: backgroundColors,
+            borderColor: chartType === 'pie' ? ["#36A2EB", "#FF6384"] : ["rgba(75, 192, 192, 1)", "rgba(255,99,132,1)"],
             borderWidth: 1
           }]
         },
@@ -705,14 +754,30 @@
             title: {
               display: true,
               text: "Persentase Kehadiran Mahasiswa"
+            },
+            tooltip: {
+              callbacks: {
+                label: function (tooltipItem) {
+                  return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+                }
+              }
             }
           },
-          scales: {
+          scales: chartType === 'pie' ? {} : { // Hilangkan skala untuk pie chart
             y: {
               beginAtZero: true,
-              ticks: { precision: 0 }
+              ticks: { precision: 0 },
+              grid: {
+                display: true
+              }
+            },
+            x: {
+              grid: {
+                display: true
+              }
             }
-          }
+          },
+          maintainAspectRatio: false // Agar bisa mengontrol tinggi chart
         }
       });
     }
@@ -731,9 +796,6 @@
 
         // Simpan perubahan chart_type ke window.sectionChanges
         const sectionKey = this.getAttribute("data-section");
-        if (!window.sectionChanges) {
-          window.sectionChanges = {};
-        }
         if (!window.sectionChanges[sectionKey]) {
           window.sectionChanges[sectionKey] = {};
         }

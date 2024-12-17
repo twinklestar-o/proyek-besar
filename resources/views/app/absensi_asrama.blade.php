@@ -95,7 +95,8 @@
         <!-- Chart Absensi Asrama -->
         @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
       <div class="flex justify-center mb-5">
-        <div class="w-full" style="width: 80%;">
+        <!-- Tambahkan ID pada kontainer chart untuk manipulasi melalui JavaScript -->
+        <div id="chartContainerAbsensi" class="w-full" style="width: 80%;">
         <canvas id="absensiAsramaChart" style="width: 100%;"></canvas>
         </div>
       </div>
@@ -134,52 +135,97 @@
 <!-- Bootstrap Icons (Pastikan sudah di-include) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+<!-- SweetAlert2 Library (Pastikan untuk menambahkan SweetAlert2) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- Chart Initialization Script -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const barColorsAbsensi = ["royalblue", "royalblue", "royalblue"];
     const typeAbsensi = ["Absen", "Izin", "Sakit"];
-
-    // Inisialisasi Chart Absensi Asrama dengan tipe chart dari database
     let absensiAsramaChart;
+
+    // Warna default untuk Bar dan Line Chart
+    const defaultColorsAbsensi = ["royalblue", "royalblue", "royalblue"];
+
+    // Warna khusus untuk Pie Chart
+    const pieColorsAbsensi = ["#FF6384", "#36A2EB", "#FFCE56"];
+
+    // Referensi ke kontainer chart
+    const chartContainerAbsensi = document.getElementById("chartContainerAbsensi");
+
+    // Fungsi untuk menginisialisasi chart
     function initializeAbsensiChart(chartType) {
       const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
       const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
       const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
       const jlhAbsensi = [Absen, Izin, Sakit];
 
-      const maxValue = Math.max(...jlhAbsensi);
-      const gap = maxValue;
-      const yMax = maxValue + gap;
-
       const ctx = document.getElementById("absensiAsramaChart").getContext('2d');
+
+      // Tentukan warna berdasarkan jenis chart
+      let backgroundColors;
+      if (chartType === 'pie') {
+        backgroundColors = pieColorsAbsensi;
+      } else {
+        backgroundColors = defaultColorsAbsensi;
+      }
+
+      // Sesuaikan ukuran kontainer berdasarkan jenis chart
+      if (chartType === 'pie') {
+        chartContainerAbsensi.style.width = "60%"; // Kurangi lebar untuk pie chart
+        chartContainerAbsensi.style.height = "400px"; // Atur tinggi jika diperlukan
+      } else {
+        chartContainerAbsensi.style.width = "80%"; // Kembali ke lebar semula
+        chartContainerAbsensi.style.height = "auto"; // Atur tinggi otomatis
+      }
+
+      // Konfigurasi opsi chart
+      const options = {
+        plugins: {
+          legend: { display: true },
+          title: {
+            display: true,
+            text: "Jumlah Absensi"
+          }
+        },
+        maintainAspectRatio: false, // Agar bisa mengontrol tinggi chart
+      };
+
+      // Jika bukan pie chart, tambahkan opsi skala dengan grid lines
+      if (chartType !== 'pie') {
+        const maxValue = Math.max(...jlhAbsensi);
+        const gap = maxValue;
+        const yMax = maxValue + gap;
+
+        options.scales = {
+          y: {
+            beginAtZero: true,
+            max: yMax,
+            grid: {
+              display: true
+            }
+          },
+          x: {
+            grid: {
+              display: true
+            }
+          }
+        };
+      }
+
       absensiAsramaChart = new Chart(ctx, {
-        type: chartType, // Gunakan tipe chart yang diberikan
+        type: chartType,
         data: {
           labels: typeAbsensi,
           datasets: [
             {
               label: 'Jumlah Mahasiswa yang Absen',
-              backgroundColor: barColorsAbsensi,
+              backgroundColor: backgroundColors,
               data: jlhAbsensi
             }
           ]
         },
-        options: {
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: "Jumlah Absensi"
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: yMax
-            }
-          }
-        }
+        options: options
       });
     }
 
@@ -187,6 +233,9 @@
     @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
     initializeAbsensiChart("{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}");
   @endif
+
+    // Simpan referensi ke chart global agar bisa diakses di luar fungsi
+    window.initializeAbsensiChart = initializeAbsensiChart;
   });
 </script>
 
@@ -199,6 +248,7 @@
     const editableElements = document.querySelectorAll(".editable");
     const chartTypeContainerAbsensi = document.getElementById("chartTypeContainerAbsensi");
     const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
+    const chartContainerAbsensi = document.getElementById("chartContainerAbsensi");
     let isEditing = false;
 
     const changes = {};
@@ -272,9 +322,9 @@
         changes[sectionKey].updatedChartType = selectedChartType;
 
         // Update chart secara langsung (preview)
-        if (absensiAsramaChart) {
-          absensiAsramaChart.destroy();
-          initializeAbsensiChart(selectedChartType);
+        if (window.absensiAsramaChart) {
+          window.absensiAsramaChart.destroy();
+          window.initializeAbsensiChart(selectedChartType);
         }
       });
     }
@@ -337,54 +387,6 @@
           Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
         });
     }
-
-    // Fungsi untuk menginisialisasi chart, perlu didefinisikan ulang di sini untuk akses global
-    function initializeAbsensiChart(chartType) {
-      const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
-      const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
-      const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
-      const jlhAbsensi = [Absen, Izin, Sakit];
-
-      const maxValue = Math.max(...jlhAbsensi);
-      const gap = maxValue;
-      const yMax = maxValue + gap;
-
-      const ctx = document.getElementById("absensiAsramaChart").getContext('2d');
-      absensiAsramaChart = new Chart(ctx, {
-        type: chartType, // Gunakan tipe chart yang diberikan
-        data: {
-          labels: typeAbsensi,
-          datasets: [
-            {
-              label: 'Jumlah Mahasiswa yang Absen',
-              backgroundColor: barColorsAbsensi,
-              data: jlhAbsensi
-            }
-          ]
-        },
-        options: {
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: "Jumlah Absensi"
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: yMax
-            }
-          }
-        }
-      });
-    }
-
-    // Pastikan fungsi initializeAbsensiChart didefinisikan sebelum digunakan
-    // Inisialisasi chart saat halaman dimuat
-    @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
-    initializeAbsensiChart("{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}");
-  @endif
   });
 </script>
 

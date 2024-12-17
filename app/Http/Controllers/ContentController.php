@@ -21,7 +21,7 @@ class ContentController extends Controller
     {
         $data = $request->all();
 
-        // Definisikan aturan validasi dinamis berdasarkan input
+
         $rules = [];
         foreach ($data as $key => $value) {
             if (isset($value['title'])) {
@@ -116,7 +116,15 @@ class ContentController extends Controller
                 'message' => 'Section baru berhasil ditambahkan.',
                 'section' => $section
             ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle database-specific errors
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menambahkan section baru.',
+                'error' => $e->getMessage()
+            ], 500);
         } catch (\Exception $e) {
+            // Handle general errors
             return response()->json([
                 'status' => 'error',
                 'message' => 'Gagal menambahkan section baru.',
@@ -164,5 +172,6 @@ class ContentController extends Controller
             ], 500);
         }
     }
+
 
 }

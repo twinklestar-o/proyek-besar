@@ -46,7 +46,5 @@ Route::middleware(['auth'])->group(function () {
     // SectionController Routes
     Route::get('/admin/api/sections', [ContentController::class, 'getSections'])->name('sections.get');
     Route::post('/admin/api/sections/update', [ContentController::class, 'updateSections'])->name('sections.update');
-
-    // Tambahkan rute berikut untuk menyimpan section baru
-    Route::post('/admin/api/sections/store', [ContentController::class, 'storeSection'])->name('sections.store');
+    Route::post('/admin/api/sections/store', [ContentController::class, 'storeSection'])->name('sections.store'); // Tambahkan rute ini
 });

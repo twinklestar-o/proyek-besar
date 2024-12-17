@@ -18,7 +18,8 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tambahkan link TinyMCE -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/dbs9ztji4pla4u37q7np5b1o8rq6yv325he848tz6b2xi1a0/tinymce/6/tinymce.min.js"
+        referrerpolicy="origin"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Inisialisasi TinyMCE pada modal input
