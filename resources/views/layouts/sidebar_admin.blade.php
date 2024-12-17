@@ -17,6 +17,20 @@
         integrity="sha256-Qsx5lrStHZyR9REqhUF8iQt73X06c8LGIUPzpOhwRrI=" crossorigin="anonymous">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tambahkan link TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inisialisasi TinyMCE pada modal input
+            tinymce.init({
+                selector: '#newSectionDescription',
+                height: 200,
+                menubar: false,
+                plugins: 'lists link image preview',
+                toolbar: 'undo redo | bold italic underline | bullist numlist | link image | preview',
+            });
+        });
+    </script>
     <style>
         /* Extend Tailwind default configuration */
         @layer utilities {

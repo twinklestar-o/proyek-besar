@@ -2,7 +2,6 @@
 
 @section('content')
 @php
-  // Definisikan mapping id_asrama ke nama_asrama
   $asramas = [
     '1' => 'Pniel',
     '2' => 'Kapernaum',
@@ -16,7 +15,7 @@
 
 <div class="container mx-auto px-4 py-8">
   <!-- Pelanggaran Section -->
-  <div class="bg-white shadow rounded-lg p-6 mb-8">
+  <div class="relative group bg-white shadow rounded-lg p-6 mb-8">
     <!-- Editable Title -->
     <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="pelanggaran_asrama" data-type="title">
       {!! $sections['pelanggaran_asrama']->title ?? 'Data Pelanggaran Asrama' !!}
@@ -25,6 +24,13 @@
     <p class="text-gray-600 mb-4 editable" data-section="pelanggaran_asrama" data-type="description">
       {!! $sections['pelanggaran_asrama']->description ?? 'Deskripsi Default' !!}
     </p>
+
+    <!-- Tombol "+" untuk menambah section baru. Muncul hanya saat hover pada container ini dan edit mode aktif -->
+    <button
+      class="absolute right-0 top-1/2 -translate-y-1/2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-green-600 hidden"
+      id="addSectionButton" title="Tambah Section Baru">
+      +
+    </button>
 
     <!-- Filter Form -->
     <form id="filterForm" method="GET" action="{{ route(Auth::check() ? 'pelanggaran.auth' : 'pelanggaran.public') }}"
@@ -51,7 +57,6 @@
           </option>
         </select>
 
-        <!-- Warning -->
         <div id="warning-message"
           class="mt-2 flex items-center text-yellow-600 {{ empty($filters['id_asrama']) ? '' : 'hidden' }}">
           <p class="font-semibold"> ! &nbsp;</p>
@@ -104,7 +109,6 @@
     <div class="mt-4">
       <h2 class="text-xl font-bold text-gray-800 mb-2">Data Pelanggaran</h2>
 
-      <!-- Chart Pelanggaran -->
       @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
       <div class="flex justify-center mb-5">
       <div class="w-full" style="width: 80%;">
@@ -166,12 +170,40 @@
   </div>
 </div>
 
+<!-- Modal untuk menambahkan section baru -->
+<div id="newSectionModal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-50">
+  <div class="bg-white rounded p-4 w-2/3 max-w-xl">
+    <h2 class="text-xl font-bold mb-4">Tambah Section Baru</h2>
+    <form id="newSectionForm">
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Judul Section</label>
+        <input type="text" name="title" class="border w-full px-2 py-1" required>
+      </div>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Deskripsi</label>
+        <textarea name="description" class="tinymce-editor w-full h-40"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block font-semibold mb-2">Jenis Chart</label>
+        <select name="chart_type" class="border w-full px-2 py-1">
+          <option value="bar">Bar</option>
+          <option value="line">Line</option>
+          <option value="pie">Pie</option>
+        </select>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" class="bg-gray-300 text-gray-800 px-3 py-1 rounded" id="cancelNewSection">Batal</button>
+        <button type="submit" class="bg-indigo-600 text-white px-3 py-1 rounded">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const asramaDropdown = document.getElementById('id_asrama');
     const warningMessage = document.getElementById('warning-message');
 
-    // Listen for changes in the dropdown
     asramaDropdown.addEventListener('change', function () {
       if (asramaDropdown.value) {
         warningMessage.classList.add('hidden');
@@ -180,6 +212,20 @@
       }
     });
   });
+</script>
+
+<!-- TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+  function initTinyMCE() {
+    tinymce.init({
+      selector: '.tinymce-editor',
+      height: 200,
+      menubar: false,
+      plugins: 'link lists',
+      toolbar: 'undo redo | formatselect | bold italic underline | bullist numlist | link'
+    });
+  }
 </script>
 
 <!-- Edit Section Script -->
@@ -191,8 +237,11 @@
     const editableElements = document.querySelectorAll(".editable");
     const chartTypeContainer = document.getElementById("chartTypeContainer");
     const chartTypeSelect = document.getElementById("chartType");
-    let isEditing = false;
 
+    // Tombol "+" untuk menambah section
+    const addSectionButton = document.getElementById('addSectionButton');
+
+    let isEditing = false;
     const changes = {};
 
     editButton.addEventListener("click", () => {
@@ -233,12 +282,20 @@
         }
       });
 
-      // Jika chart type container ada (chartnya sudah muncul), tampilkan/hilangkan saat edit
+      // Tampilkan/hilangkan chartTypeContainer saat edit
       if (chartTypeContainer) {
         chartTypeContainer.classList.toggle('hidden', !isEditing);
       }
 
-      // Ganti ikon dan teks tombol
+      // Tampilkan/hilangkan tombol "+" untuk menambah section baru
+      if (addSectionButton) {
+        if (isEditing) {
+          addSectionButton.classList.remove('hidden');
+        } else {
+          addSectionButton.classList.add('hidden');
+        }
+      }
+
       editIcon.classList.toggle("bi-pencil", !isEditing);
       editIcon.classList.toggle("bi-check-circle", isEditing);
       editIcon.style.color = isEditing ? "green" : "orange";
@@ -246,12 +303,10 @@
       editText.style.color = isEditing ? "green" : "orange";
 
       if (!isEditing) {
-        // Simpan hanya perubahan
         saveChanges();
       }
     });
 
-    // Handle Enter key untuk <br> saat editing
     editableElements.forEach((element) => {
       element.addEventListener("keydown", function (e) {
         if (e.key === "Enter") {
@@ -272,11 +327,9 @@
       });
     });
 
-    // Listener untuk chartTypeSelect (jika ada)
     if (chartTypeSelect) {
       chartTypeSelect.addEventListener("change", function () {
         const sectionKey = this.getAttribute("data-section");
-        const type = this.getAttribute("data-type");
         if (!changes[sectionKey]) {
           changes[sectionKey] = {};
         }
@@ -287,7 +340,6 @@
     function saveChanges() {
       const payload = {};
 
-      // Kumpulkan hanya perubahan yang ada
       for (const sectionKey in changes) {
         payload[sectionKey] = {};
 
@@ -303,7 +355,6 @@
           payload[sectionKey].chart_type = changes[sectionKey].updatedChartType;
         }
 
-        // Jika tidak ada perubahan, hapus keynya
         if (Object.keys(payload[sectionKey]).length === 0) {
           delete payload[sectionKey];
         }
@@ -314,7 +365,6 @@
         return;
       }
 
-      // Kirim data ke server
       fetch("{{ route('sections.update') }}", {
         method: "POST",
         headers: {
@@ -342,12 +392,61 @@
           Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
         });
     }
+
+    // Event untuk tombol tambah section
+    addSectionButton.addEventListener('click', function () {
+      document.getElementById('newSectionModal').classList.remove('hidden');
+      initTinyMCE(); // Inisialisasi TinyMCE saat modal muncul
+    });
+
+    // Event untuk cancel pada modal
+    document.getElementById('cancelNewSection').addEventListener('click', function () {
+      document.getElementById('newSectionModal').classList.add('hidden');
+      tinymce.remove(); // Hapus instance TinyMCE saat modal ditutup
+    });
+
+    // Submit form section baru
+    document.getElementById('newSectionForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const payload = {
+        section: 'new_section_' + Date.now(),
+        title: formData.get('title'),
+        description: tinymce.get(document.querySelector('.tinymce-editor').id).getContent(),
+        chart_type: formData.get('chart_type'),
+      };
+
+      // Contoh fetch post. Sesuaikan dengan route dan handler Anda.
+      fetch("{{ route('sections.store') }}", {
+        method: "POST",
+        headers: {
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            Swal.fire("Sukses", "Section baru berhasil ditambahkan.", "success").then(() => {
+              location.reload();
+            });
+          } else {
+            Swal.fire("Error", "Gagal menambahkan section.", "error");
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          Swal.fire("Error", "Terjadi kesalahan.", "error");
+        });
+    });
+
   });
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const barColors = ["blue", "orange", "red"];
+    const barColors = ["blue", "orange", "red", "green", "purple", "teal", "gray"];
     const type = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
 
     function updateChart() {
@@ -402,8 +501,16 @@
     if ({{ isset($data) && isset($data['data']) && count($data['data']) > 0 ? 'true' : 'false' }}) {
       updateChart();
     }
-
   });
 </script>
+
+<style>
+  /* Saat edit mode aktif, tunjukkan tombol plus. Default disembunyikan. */
+  /* Sudah di-handle dengan JS toggle class hidden, tapi ini jaga-jaga. */
+
+  .group:hover #addSectionButton {
+    opacity: 1 !important;
+  }
+</style>
 
 @endsection

@@ -16,6 +16,7 @@ class ContentController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
+
     public function updateSections(Request $request)
     {
         $data = $request->all();
@@ -57,11 +58,11 @@ class ContentController extends Controller
                 $cleanDescription = isset($sectionData['description']) ? $purifier->purify($sectionData['description']) : $section->description;
                 $chartType = isset($sectionData['chart_type']) ? $sectionData['chart_type'] : $section->chart_type;
 
-                // Update section dengan chart_type
+                // Update section sesuai dengan key
                 $section->update([
                     'title' => $cleanTitle,
                     'description' => $cleanDescription,
-                    'chart_type' => $chartType,
+                    'chart_type' => $chartType, // Update chart_type
                 ]);
             }
         }
@@ -70,5 +71,57 @@ class ContentController extends Controller
             'status' => 'success',
             'message' => 'Data berhasil diperbarui.'
         ]);
+    }
+
+    public function storeSection(Request $request)
+    {
+        // Validasi data yang diterima
+        $validator = Validator::make($request->all(), [
+            'section' => 'required|string|unique:sections,section|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'chart_type' => 'required|string|in:bar,line,pie',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Inisialisasi HTMLPurifier untuk sanitasi HTML
+        $config = HTMLPurifier_Config::createDefault();
+        $purifier = new HTMLPurifier($config);
+
+        // Sanitasi input
+        $cleanTitle = $purifier->purify($request->input('title'));
+        $cleanDescription = $purifier->purify($request->input('description'));
+        $chartType = $request->input('chart_type');
+
+        // Membuat identifier section unik
+        $sectionKey = $request->input('section');
+
+        // Membuat section baru
+        try {
+            $section = Section::create([
+                'section' => $sectionKey,
+                'title' => $cleanTitle,
+                'description' => $cleanDescription,
+                'chart_type' => $chartType,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Section baru berhasil ditambahkan.',
+                'section' => $section
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menambahkan section baru.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

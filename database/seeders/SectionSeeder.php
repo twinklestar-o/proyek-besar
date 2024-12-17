@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class SectionSeeder extends Seeder
 {
@@ -49,8 +48,6 @@ class SectionSeeder extends Seeder
         'created_at' => now(),
         'updated_at' => now(),
       ]);
-
-
     }
   }
 }

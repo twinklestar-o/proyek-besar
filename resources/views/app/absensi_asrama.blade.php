@@ -4,6 +4,7 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Absensi Asrama Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
+
     <!-- Editable Title -->
     <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="absensi_asrama" data-type="title">
       {!! $sections['absensi_asrama']->title ?? 'Absensi Asrama' !!}
@@ -96,21 +97,22 @@
       <div class="flex justify-center mb-5">
         <div class="w-full" style="width: 80%;">
         <canvas id="absensiAsramaChart" style="width: 100%;"></canvas>
-        <!-- Dropdown untuk mengganti chart_type, hidden by default -->
-        <div id="chartTypeContainerAbsensi" class="hidden mb-4">
-          <label for="chartTypeAbsensi" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
-          <select id="chartTypeAbsensi"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          data-section="absensi_asrama" data-type="chart_type">
-          <option value="bar" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>
-            Bar</option>
-          <option value="line" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
-            Line</option>
-          <option value="pie" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>
-            Pie</option>
-          </select>
         </div>
-        </div>
+      </div>
+
+      <!-- Dropdown untuk mengganti chart_type, hidden by default -->
+      <div id="chartTypeContainerAbsensi" class="hidden mb-4">
+        <label for="chartTypeAbsensi" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
+        <select id="chartTypeAbsensi"
+        class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+        data-section="absensi_asrama" data-type="chart_type">
+        <option value="bar" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar
+        </option>
+        <option value="line" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line
+        </option>
+        <option value="pie" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie
+        </option>
+        </select>
       </div>
     @endif
 
@@ -129,12 +131,18 @@
 
 <!-- Chart.js Library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Bootstrap Icons (Pastikan sudah di-include) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<!-- Chart Initialization Script -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const barColors = ["royalblue", "royalblue", "royalblue"];
-    const type = ["Absen", "Izin", "Sakit"];
+    const barColorsAbsensi = ["royalblue", "royalblue", "royalblue"];
+    const typeAbsensi = ["Absen", "Izin", "Sakit"];
 
-    function updateChart() {
+    // Inisialisasi Chart Absensi Asrama dengan tipe chart dari database
+    let absensiAsramaChart;
+    function initializeAbsensiChart(chartType) {
       const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
       const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
       const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
@@ -144,18 +152,15 @@
       const gap = maxValue;
       const yMax = maxValue + gap;
 
-      if (absensiAsramaChart) {
-        absensiAsramaChart.destroy();
-      }
-
-      absensiAsramaChart = new Chart("absensiAsramaChart", {
-        type: "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}",
+      const ctx = document.getElementById("absensiAsramaChart").getContext('2d');
+      absensiAsramaChart = new Chart(ctx, {
+        type: chartType, // Gunakan tipe chart yang diberikan
         data: {
-          labels: type,
+          labels: typeAbsensi,
           datasets: [
             {
               label: 'Jumlah Mahasiswa yang Absen',
-              backgroundColor: barColors,
+              backgroundColor: barColorsAbsensi,
               data: jlhAbsensi
             }
           ]
@@ -178,37 +183,14 @@
       });
     }
 
-    let absensiAsramaChart;
-    updateChart();
-
-
+    // Inisialisasi chart saat halaman dimuat
+    @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
+    initializeAbsensiChart("{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}");
+  @endif
   });
 </script>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const selectAsrama = document.getElementById("id_asrama");
-    const warningMessage = document.getElementById("warning-message");
-
-    // Function to toggle the warning message
-    const toggleWarning = () => {
-      if (selectAsrama.value === "") {
-        warningMessage.classList.remove("hidden");
-        warningMessage.classList.add("flex");
-      } else {
-        warningMessage.classList.remove("flex");
-        warningMessage.classList.add("hidden");
-      }
-    };
-
-    // Attach event listener to the select element
-    selectAsrama.addEventListener("change", toggleWarning);
-
-    // Initial check when page loads
-    toggleWarning();
-  });
-</script>
-
+<!-- Edit Section and Chart Type Preview Script -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const editButton = document.getElementById("editButton");
@@ -280,18 +262,27 @@
     // Event listener untuk perubahan chart_type pada absensi_asrama
     if (chartTypeSelectAbsensi) {
       chartTypeSelectAbsensi.addEventListener("change", function () {
+        const selectedChartType = this.value;
         const sectionKey = this.getAttribute("data-section");
+
+        // Simpan perubahan chart_type
         if (!changes[sectionKey]) {
           changes[sectionKey] = {};
         }
-        changes[sectionKey].updatedChartType = this.value;
-        // Chart sudah otomatis diupdate di script chart.js di atas saat dropdown change
+        changes[sectionKey].updatedChartType = selectedChartType;
+
+        // Update chart secara langsung (preview)
+        if (absensiAsramaChart) {
+          absensiAsramaChart.destroy();
+          initializeAbsensiChart(selectedChartType);
+        }
       });
     }
 
-    const saveChanges = () => {
+    function saveChanges() {
       const payload = {};
 
+      // Kumpulkan hanya perubahan yang ada
       for (const sectionKey in changes) {
         payload[sectionKey] = {};
 
@@ -307,6 +298,7 @@
           payload[sectionKey].chart_type = changes[sectionKey].updatedChartType;
         }
 
+        // Jika tidak ada perubahan, hapus keynya
         if (Object.keys(payload[sectionKey]).length === 0) {
           delete payload[sectionKey];
         }
@@ -317,6 +309,7 @@
         return;
       }
 
+      // Kirim data ke server
       fetch("{{ route('sections.update') }}", {
         method: "POST",
         headers: {
@@ -328,7 +321,9 @@
         .then((response) => response.json())
         .then((data) => {
           if (data.status === "success") {
-            Swal.fire("Sukses", data.message, "success").then(() => location.reload());
+            Swal.fire("Sukses", data.message, "success").then(() => {
+              location.reload();
+            });
           } else {
             let errorMessages = '';
             for (const field in data.errors) {
@@ -338,21 +333,13 @@
           }
         })
         .catch((error) => {
+          console.error("Error:", error);
           Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
         });
-    };
-  });
-</script>
+    }
 
-
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const barColors = ["royalblue", "royalblue", "royalblue"];
-    const type = ["Absen", "Izin", "Sakit"];
-
-    let absensiAsramaChart;
-
-    function updateChart(chartType = "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}") {
+    // Fungsi untuk menginisialisasi chart, perlu didefinisikan ulang di sini untuk akses global
+    function initializeAbsensiChart(chartType) {
       const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
       const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
       const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
@@ -362,18 +349,15 @@
       const gap = maxValue;
       const yMax = maxValue + gap;
 
-      if (absensiAsramaChart) {
-        absensiAsramaChart.destroy();
-      }
-
-      absensiAsramaChart = new Chart("absensiAsramaChart", {
-        type: chartType,
+      const ctx = document.getElementById("absensiAsramaChart").getContext('2d');
+      absensiAsramaChart = new Chart(ctx, {
+        type: chartType, // Gunakan tipe chart yang diberikan
         data: {
-          labels: type,
+          labels: typeAbsensi,
           datasets: [
             {
               label: 'Jumlah Mahasiswa yang Absen',
-              backgroundColor: barColors,
+              backgroundColor: barColorsAbsensi,
               data: jlhAbsensi
             }
           ]
@@ -396,16 +380,36 @@
       });
     }
 
-    // Inisialisasi chart dengan jenis yang benar
-    updateChart();
+    // Pastikan fungsi initializeAbsensiChart didefinisikan sebelum digunakan
+    // Inisialisasi chart saat halaman dimuat
+    @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
+    initializeAbsensiChart("{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}");
+  @endif
+  });
+</script>
 
-    // Event listener untuk live preview saat dropdown chart type berubah
-    const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
-    if (chartTypeSelectAbsensi) {
-      chartTypeSelectAbsensi.addEventListener("change", function () {
-        updateChart(this.value);
-      });
-    }
+<!-- Warning Message Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const selectAsrama = document.getElementById("id_asrama");
+    const warningMessage = document.getElementById("warning-message");
+
+    // Function to toggle the warning message
+    const toggleWarning = () => {
+      if (selectAsrama.value === "") {
+        warningMessage.classList.remove("hidden");
+        warningMessage.classList.add("flex");
+      } else {
+        warningMessage.classList.remove("flex");
+        warningMessage.classList.add("hidden");
+      }
+    };
+
+    // Attach event listener to the select element
+    selectAsrama.addEventListener("change", toggleWarning);
+
+    // Initial check when page loads
+    toggleWarning();
   });
 </script>
 

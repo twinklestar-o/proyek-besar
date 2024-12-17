@@ -141,6 +141,21 @@
         <div class="flex justify-center mb-5">
           <div class="sm:w-80">
             <canvas id="absensiKelasChart"></canvas>
+            <!-- Setelah elemen Chart -->
+            <div id="chartTypeContainerAbsensiKelas" class="hidden mb-4">
+              <label for="chartTypeAbsensiKelas" class="block text-gray-700 font-semibold mb-2">Pilih Jenis
+                Chart:</label>
+              <select id="chartTypeAbsensiKelas"
+                class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+                data-section="absensi_kelas" data-type="chart_type">
+                <option value="bar" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar
+                </option>
+                <option value="line" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
+                  Line</option>
+                <option value="pie" {{ ($sections['absensi_kelas']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -423,12 +438,22 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const editButton = document.getElementById("editButton");
+    const editIcon = document.getElementById("editIcon");
+    const editText = document.getElementById("editText");
     const editableElements = document.querySelectorAll(".editable");
+    const chartTypeContainerTotalMahasiswa = document.getElementById("chartTypeContainerTotalMahasiswa");
+    const chartTypeContainerPrestasi = document.getElementById("chartTypeContainerPrestasi");
+    const chartTypeContainerKegiatanLuar = document.getElementById("chartTypeContainerKegiatanLuar");
+    const chartTypeContainerAbsensiKelas = document.getElementById("chartTypeContainerAbsensiKelas"); // ADD
     let isEditing = false;
+
+    // Gunakan objek global untuk melacak perubahan
+    if (!window.sectionChanges) {
+      window.sectionChanges = {};
+    }
 
     const changes = {};
 
-    // Toggle Editing
     editButton.addEventListener("click", () => {
       isEditing = !isEditing;
 
@@ -467,14 +492,38 @@
         }
       });
 
+      // Toggle visibility dropdown chart type untuk semua section
+      if (chartTypeContainerTotalMahasiswa) {
+        chartTypeContainerTotalMahasiswa.classList.toggle('hidden', !isEditing);
+      }
+      if (chartTypeContainerPrestasi) {
+        chartTypeContainerPrestasi.classList.toggle('hidden', !isEditing);
+      }
+      if (chartTypeContainerKegiatanLuar) {
+        chartTypeContainerKegiatanLuar.classList.toggle('hidden', !isEditing);
+      }
+      if (chartTypeContainerAbsensiKelas) { // ADD
+        chartTypeContainerAbsensiKelas.classList.toggle('hidden', !isEditing);
+      }
+
+      // Toggle ikon dan teks tombol
+      editIcon.classList.toggle("bi-pencil", !isEditing);
+      editIcon.classList.toggle("bi-check-circle", isEditing);
+      editIcon.style.color = isEditing ? "green" : "orange";
+      editText.textContent = isEditing ? "Done" : "Edit";
+      editText.style.color = isEditing ? "green" : "orange";
+
       if (!isEditing) {
+        // Simpan perubahan saat mode edit dimatikan
         saveChanges();
       }
     });
 
+    // Fungsi untuk menyimpan perubahan
     function saveChanges() {
       const payload = {};
 
+      // Gabungkan perubahan dari editable elements
       for (const sectionKey in changes) {
         payload[sectionKey] = {};
         if (changes[sectionKey].updatedTitle) {
@@ -483,6 +532,20 @@
         if (changes[sectionKey].updatedDescription) {
           payload[sectionKey].description = changes[sectionKey].updatedDescription;
         }
+      }
+
+      // Gabungkan perubahan dari chart type dropdowns
+      for (const sectionKey in window.sectionChanges) {
+        if (!payload[sectionKey]) {
+          payload[sectionKey] = {};
+        }
+        if (window.sectionChanges[sectionKey].updatedChartType) {
+          payload[sectionKey].chart_type = window.sectionChanges[sectionKey].updatedChartType;
+        }
+      }
+
+      // Hapus sectionKey yang tidak ada perubahan
+      for (const sectionKey in payload) {
         if (Object.keys(payload[sectionKey]).length === 0) {
           delete payload[sectionKey];
         }
@@ -493,6 +556,7 @@
         return;
       }
 
+      // Kirim data ke server
       fetch("{{ route('sections.update') }}", {
         method: "POST",
         headers: {
@@ -508,17 +572,30 @@
               location.reload();
             });
           } else {
-            console.error("Error:", data.errors);
-            Swal.fire("Error", "Terjadi kesalahan saat menyimpan perubahan.", "error");
+            let errorMessages = '';
+            for (const field in data.errors) {
+              errorMessages += `${field}: ${data.errors[field].join(', ')}<br>`;
+            }
+            Swal.fire("Error", "Terjadi kesalahan:<br>" + errorMessages, "error");
           }
         })
         .catch((error) => {
           console.error("Error:", error);
           Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
+        })
+        .finally(() => {
+          // Reset perubahan setelah menyimpan
+          for (const sectionKey in changes) {
+            delete changes[sectionKey];
+          }
+          for (const sectionKey in window.sectionChanges) {
+            delete window.sectionChanges[sectionKey];
+          }
         });
     }
   });
 </script>
+
 
 <script>$(document).ready(function () {
     function fetchMatkul(prodi_id, semester, ta) {
@@ -596,4 +673,78 @@
     });
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Inisialisasi Chart Absensi Kelas dengan jenis chart dinamis
+    const absensiKelasCanvas = document.getElementById('absensiKelasChart');
+    let absensiKelasChart;
+    let currentChartTypeAbsensiKelas = "{{ $sections['absensi_kelas']->chart_type ?? 'bar' }}";
+
+    function initializeAbsensiKelasChart(chartType) {
+      if (absensiKelasChart) {
+        absensiKelasChart.destroy();
+      }
+
+      const ctxAbsensiKelas = absensiKelasCanvas.getContext('2d');
+      absensiKelasChart = new Chart(ctxAbsensiKelas, {
+        type: chartType,
+        data: {
+          labels: ["Hadir", "Tidak Hadir"],
+          datasets: [{
+            label: 'Persentase Kehadiran Mahasiswa',
+            data: [75, 25], // Ganti dengan data dinamis Anda
+            backgroundColor: ["rgba(75, 192, 192, 0.2)", "rgba(255, 99, 132, 0.2)"],
+            borderColor: ["rgba(75, 192, 192, 1)", "rgba(255,99,132,1)"],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Persentase Kehadiran Mahasiswa"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    // Inisialisasi chart dengan chart_type saat ini
+    if (absensiKelasCanvas) {
+      initializeAbsensiKelasChart(currentChartTypeAbsensiKelas);
+    }
+
+    // Event listener untuk perubahan jenis chart
+    const chartTypeSelectAbsensiKelas = document.getElementById("chartTypeAbsensiKelas");
+    if (chartTypeSelectAbsensiKelas) {
+      chartTypeSelectAbsensiKelas.addEventListener("change", function () {
+        const selectedChartType = this.value;
+        initializeAbsensiKelasChart(selectedChartType);
+
+        // Simpan perubahan chart_type ke window.sectionChanges
+        const sectionKey = this.getAttribute("data-section");
+        if (!window.sectionChanges) {
+          window.sectionChanges = {};
+        }
+        if (!window.sectionChanges[sectionKey]) {
+          window.sectionChanges[sectionKey] = {};
+        }
+        window.sectionChanges[sectionKey].updatedChartType = selectedChartType;
+      });
+    }
+
+    // Buat fungsi inisialisasi dan referensi chart secara global jika diperlukan
+    window.initializeAbsensiKelasChart = initializeAbsensiKelasChart;
+    window.absensiKelasChart = absensiKelasChart;
+  });
+</script>
+
 @endsection
