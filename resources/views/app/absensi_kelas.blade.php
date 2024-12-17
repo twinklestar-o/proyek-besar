@@ -56,7 +56,7 @@
       <!-- Tombol Ambil Mata Kuliah -->
       <div>
         <button type="button" id="ambilMatkul"
-          class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+          class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring focus:ring-indigo-200">
           Ambil Mata Kuliah
         </button>
       </div>
@@ -289,7 +289,7 @@
             datasets: [
               {
                 label: 'Persentase Kehadiran Mahasiswa',
-                backgroundColor: ["#36A2EB", "#FF6384"], // Warna berbeda untuk pie chart
+                backgroundColor: ["#074799", "#E32227"], // Warna berbeda untuk pie chart
                 data: jlhKehadiran
               }
             ]

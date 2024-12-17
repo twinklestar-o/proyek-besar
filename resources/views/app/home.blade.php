@@ -53,7 +53,7 @@
             <!-- Filter button -->
             <div>
                 <button type="submit"
-                    class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+                    class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring focus:ring-indigo-200">
                     Ambil Data
                 </button>
             </div>
@@ -114,14 +114,12 @@
                                 datasets: [{
                                     label: 'Jumlah Mahasiswa per Prodi',
                                     data: prodiCounts,
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                    borderColor: 'rgba(54, 162, 235, 1)',
-                                    borderWidth: 1
+                                    backgroundColor: '#074799'
                                 }]
                             },
                             options: {
                                 plugins: {
-                                    legend: { display: true },
+                                    legend: { display: false },
                                     title: {
                                         display: true,
                                         text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
@@ -184,7 +182,7 @@
                         },
                         options: {
                             plugins: {
-                                legend: { display: true },
+                                legend: { display: false },
                                 title: {
                                     display: true,
                                     text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
@@ -237,15 +235,13 @@
                             labels: prodiLabels,
                             datasets: [{
                                 label: 'Jumlah Mahasiswa per Prodi',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
+                                backgroundColor: '#074799',
                                 data: prodiCounts
                             }]
                         },
                         options: {
                             plugins: {
-                                legend: { display: true },
+                                legend: { display: false },
                                 title: {
                                     display: true,
                                     text: "Jumlah Mahasiswa per Prodi untuk Angkatan {{ $angkatan }}"
@@ -294,9 +290,7 @@
                             datasets: [{
                                 label: 'Total Mahasiswa Aktif',
                                 data: ['{{ $dataMahasiswa['total'] ?? 0 }}'],
-                                backgroundColor: ['rgba(75, 192, 192, 0.2)'],
-                                borderColor: ['rgba(75, 192, 192, 1)'],
-                                borderWidth: 1
+                                backgroundColor: '#074799'
                             }]
                         },
                         options: {
@@ -429,23 +423,19 @@
                     datasets: [
                         {
                             label: 'Akademik',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
+                            backgroundColor: '#074799',
                             data: dummyPrestasiTahunData
                         },
                         {
                             label: 'Non-Akademik',
-                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1,
+                            backgroundColor: '#54595F',
                             data: [17, 15, 13, 19, 16, 21] // Data Dummy
                         }
                     ]
                 },
                 options: {
                     plugins: {
-                        legend: { display: true },
+                        legend: { display: false },
                         title: {
                             display: true,
                             text: 'Jumlah Prestasi/Tahun'
@@ -472,23 +462,19 @@
                     datasets: [
                         {
                             label: 'Akademik',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
+                            backgroundColor: '#074799',
                             data: dummyPrestasiSemesterData
                         },
                         {
                             label: 'Non-Akademik',
-                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                            borderColor: 'rgba(201, 203, 207, 1)',
-                            borderWidth: 1,
+                            backgroundColor: '#54595F',
                             data: [4, 5] // Data Dummy
                         }
                     ]
                 },
                 options: {
                     plugins: {
-                        legend: { display: true },
+                        legend: { display: false },
                         title: {
                             display: true,
                             text: 'Jumlah Prestasi/Semester'
@@ -514,15 +500,13 @@
                     labels: ["MBKM", "IISMA", "Kerja Praktik", "Studi Independent", "Pertukaran Pelajar"],
                     datasets: [{
                         label: 'Jumlah Mahasiswa',
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1,
+                        backgroundColor: '#074799',
                         data: dummyKegiatanData
                     }]
                 },
                 options: {
                     plugins: {
-                        legend: { display: true },
+                        legend: { display: false },
                         title: {
                             display: true,
                             text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"

@@ -59,7 +59,7 @@
       <!-- Fetch Data Button -->
       <div>
         <button type="submit"
-          class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+          class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring focus:ring-indigo-200">
           Ambil Data
         </button>
       </div>
@@ -95,7 +95,7 @@
     <div class="mt-4">
       @if(isset($dataMasuk) || isset($dataKeluar))
       @if($dataMasuk && $dataMasuk['result'] === 'OK')
-      <p class="text-lg text-green-600 font-semibold">
+      <p class="text-lg text-blue-600 font-semibold">
       Total Log Masuk: {{ $dataMasuk['total'] ?? '0' }}
       </p>
       @if(isset($dataMasuk['logs']) && is_array($dataMasuk['logs']))
@@ -115,7 +115,7 @@
     @endif
 
       @if($dataKeluar && $dataKeluar['result'] === 'OK')
-      <p class="text-lg text-blue-600 font-semibold mt-6">
+      <p class="text-lg text-red-600 font-semibold mt-6">
       Total Log Keluar: {{ $dataKeluar['total'] ?? '0' }}
       </p>
       @if(isset($dataKeluar['logs']) && is_array($dataKeluar['logs']))
@@ -334,7 +334,7 @@
       const jlhAbsensi = [Masuk, Keluar];
       const maxValue = Math.max(...jlhAbsensi);
       const gap = maxValue;
-      const yMax = maxValue + gap;
+      const yMax = maxValue + 1000;
 
       if (logKeluarMasukChart) {
       logKeluarMasukChart.destroy();
@@ -347,7 +347,7 @@
         datasets: [
         {
           label: 'Jumlah Mahasiswa',
-          backgroundColor: ['royalblue', 'orange'],
+          backgroundColor: ['#074799', '#E32227'],
           data: jlhAbsensi
         }
         ]

@@ -69,7 +69,7 @@
       <!-- Fetch Data Button -->
       <div>
         <button type="submit"
-          class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+          class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring focus:ring-indigo-200">
           Ambil Data
         </button>
       </div>
@@ -145,10 +145,10 @@
     let absensiAsramaChart;
 
     // Warna default untuk Bar dan Line Chart
-    const defaultColorsAbsensi = ["royalblue", "royalblue", "royalblue"];
+    const defaultColorsAbsensi = ["#E32227", "#FFCE56", "#074799"];
 
     // Warna khusus untuk Pie Chart
-    const pieColorsAbsensi = ["#FF6384", "#36A2EB", "#FFCE56"];
+    const pieColorsAbsensi = ["#E32227", "#FFCE56", "#074799"];
 
     // Referensi ke kontainer chart
     const chartContainerAbsensi = document.getElementById("chartContainerAbsensi");
@@ -182,7 +182,7 @@
       // Konfigurasi opsi chart
       const options = {
         plugins: {
-          legend: { display: true },
+          legend: { display: false },
           title: {
             display: true,
             text: "Jumlah Absensi"

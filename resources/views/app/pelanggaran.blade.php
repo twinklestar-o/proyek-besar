@@ -87,7 +87,7 @@
 
       <div>
         <button type="submit"
-          class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+          class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring focus:ring-indigo-200">
           Ambil Data
         </button>
       </div>
@@ -448,7 +448,7 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const barColors = ["blue", "orange", "red", "green", "purple", "teal", "gray"];
+    const barColors = ["#074799", "orange", "#E32227", "green", "purple", "teal", "gray"];
     const typeLabels = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
 
     function updateChart(chartType) {
