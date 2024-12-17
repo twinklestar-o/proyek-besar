@@ -15,10 +15,11 @@
 
     <!-- Total Mahasiswa Aktif Section -->
     <div class="bg-white shadow rounded-lg p-6 mb-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="total_mahasiswa_aktif">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="total_mahasiswa_aktif"
+            data-field="title">
             {!! $sections['total_mahasiswa_aktif']->title ?? 'Total Mahasiswa Aktif' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="total_mahasiswa_aktif">
+        <p class="text-gray-600 mb-4 editable" data-section="total_mahasiswa_aktif" data-field="description">
             {!! $sections['total_mahasiswa_aktif']->description ?? 'Deskripsi Default' !!}
         </p>
 
@@ -319,10 +320,10 @@
 
     <!-- Prestasi Section -->
     <div class="bg-white shadow-md rounded-lg p-6 mt-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="prestasi">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="prestasi" data-field="title">
             {!! $sections['prestasi']->title ?? 'Prestasi' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="prestasi">
+        <p class="text-gray-600 mb-4 editable" data-section="prestasi" data-field="description">
             {!! $sections['prestasi']->description ?? 'Deskripsi Default' !!}
         </p>
         <!-- Tambahkan konten lainnya untuk Prestasi jika diperlukan -->
@@ -350,10 +351,11 @@
 
     <!-- Kegiatan Luar Kampus Section -->
     <div class="bg-white shadow-md rounded-lg p-6 mt-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="kegiatan_luar_kampus">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="kegiatan_luar_kampus"
+            data-field="title">
             {!! $sections['kegiatan_luar_kampus']->title ?? 'Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="kegiatan_luar_kampus">
+        <p class="text-gray-600 mb-4 editable" data-section="kegiatan_luar_kampus" data-field="description">
             {!! $sections['kegiatan_luar_kampus']->description ?? 'Deskripsi Default' !!}
         </p>
         <div class="space-y-4">
@@ -548,46 +550,55 @@
         const editableElements = document.querySelectorAll(".editable");
         let isEditing = false;
 
-        // Variabel untuk melacak perubahan
+        // Object to track changes per section and field
         const changes = {};
 
         editButton.addEventListener("click", () => {
             isEditing = !isEditing;
 
-            // Toggle contentEditable untuk elemen yang dapat diedit
+            // Toggle contentEditable for editable elements
             editableElements.forEach((element) => {
                 if (isEditing) {
-                    // Aktifkan mode edit
+                    // Enable edit mode
                     element.contentEditable = true;
                     element.style.border = "1px dashed gray";
 
-                    // Simpan nilai awal
+                    // Initialize changes object for the section if not present
                     const sectionKey = element.getAttribute("data-section");
-                    changes[sectionKey] = {
-                        original: element.innerHTML.trim(),
-                        updated: null
-                    };
+                    const fieldKey = element.getAttribute("data-field");
+                    if (!changes[sectionKey]) {
+                        changes[sectionKey] = {};
+                    }
+
+                    // Store original value if not already stored
+                    if (!changes[sectionKey].original) {
+                        changes[sectionKey].original = {};
+                    }
+                    if (!changes[sectionKey].original[fieldKey]) {
+                        changes[sectionKey].original[fieldKey] = element.innerHTML.trim();
+                    }
 
                 } else {
-                    // Nonaktifkan mode edit
+                    // Disable edit mode
                     element.contentEditable = false;
                     element.style.border = "none";
 
-                    // Cek apakah ada perubahan
+                    // Check for changes
                     const sectionKey = element.getAttribute("data-section");
+                    const fieldKey = element.getAttribute("data-field");
                     const updatedValue = element.innerHTML.trim();
 
-                    if (changes[sectionKey] && changes[sectionKey].original !== updatedValue) {
-                        // Simpan perubahan
-                        changes[sectionKey].updated = updatedValue;
-                    } else {
-                        // Hapus perubahan jika tidak ada yang berubah
-                        delete changes[sectionKey];
+                    if (changes[sectionKey].original[fieldKey] !== updatedValue) {
+                        // Store updated value
+                        if (!changes[sectionKey].updated) {
+                            changes[sectionKey].updated = {};
+                        }
+                        changes[sectionKey].updated[fieldKey] = updatedValue;
                     }
                 }
             });
 
-            // Ganti ikon dan teks tombol
+            // Toggle button icon and text
             editIcon.classList.toggle("bi-pencil", !isEditing);
             editIcon.classList.toggle("bi-check-circle", isEditing);
             editIcon.style.color = isEditing ? "green" : "orange";
@@ -595,12 +606,12 @@
             editText.style.color = isEditing ? "green" : "orange";
 
             if (!isEditing) {
-                // Simpan hanya perubahan
+                // Save changes after exiting edit mode
                 saveChanges();
             }
         });
 
-        // Handle Enter key untuk menyisipkan <br> dalam mode edit
+        // Handle Enter key for inserting <br> in edit mode
         editableElements.forEach((element) => {
             element.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
@@ -609,12 +620,12 @@
                     if (!selection.rangeCount) return;
                     const range = selection.getRangeAt(0);
 
-                    // Sisipkan <br> di posisi kursor
+                    // Insert <br> at cursor position
                     const br = document.createElement("br");
                     range.deleteContents();
                     range.insertNode(br);
 
-                    // Pindahkan kursor ke setelah <br>
+                    // Move cursor after <br>
                     range.setStartAfter(br);
                     range.collapse(true);
                     selection.removeAllRanges();
@@ -626,10 +637,10 @@
         function saveChanges() {
             const payload = {};
 
-            // Kumpulkan hanya perubahan
+            // Compile only updated fields into the payload
             for (const sectionKey in changes) {
-                if (changes[sectionKey].updated !== null) {
-                    payload[sectionKey] = { description: changes[sectionKey].updated };
+                if (changes[sectionKey].updated) {
+                    payload[sectionKey] = changes[sectionKey].updated;
                 }
             }
 
@@ -638,7 +649,7 @@
                 return;
             }
 
-            // Kirim data ke server
+            // Send data to the server
             fetch("{{ route('sections.update') }}", {
                 method: "POST",
                 headers: {
@@ -654,7 +665,16 @@
                             location.reload();
                         });
                     } else {
-                        Swal.fire("Error", "Terjadi kesalahan: " + JSON.stringify(data.errors), "error");
+                        // Construct error messages
+                        let errorMessages = "";
+                        if (data.errors) {
+                            for (const field in data.errors) {
+                                errorMessages += `${field}: ${data.errors[field].join(", ")}\n`;
+                            }
+                        } else {
+                            errorMessages = data.message || "Terjadi kesalahan.";
+                        }
+                        Swal.fire("Error", "Terjadi kesalahan: " + errorMessages, "error");
                     }
                 })
                 .catch((error) => {
@@ -663,6 +683,5 @@
                 });
         }
     });
-
 </script>
 @endsection

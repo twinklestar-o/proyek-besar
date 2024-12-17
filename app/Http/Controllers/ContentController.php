@@ -21,7 +21,6 @@ class ContentController extends Controller
     {
         $data = $request->all();
 
-
         $rules = [];
         foreach ($data as $key => $value) {
             if (isset($value['title'])) {
@@ -35,7 +34,7 @@ class ContentController extends Controller
             }
         }
 
-        // Validasi data
+        // Validate data
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
@@ -45,24 +44,24 @@ class ContentController extends Controller
             ], 422);
         }
 
-        // Inisialisasi HTMLPurifier
+        // Initialize HTMLPurifier
         $config = HTMLPurifier_Config::createDefault();
         $purifier = new HTMLPurifier($config);
 
-        // Update setiap section
+        // Update each section
         foreach ($data as $sectionKey => $sectionData) {
             $section = Section::where('section', $sectionKey)->first();
             if ($section) {
-                // Sanitasi HTML
+                // Sanitize HTML
                 $cleanTitle = isset($sectionData['title']) ? $purifier->purify($sectionData['title']) : $section->title;
                 $cleanDescription = isset($sectionData['description']) ? $purifier->purify($sectionData['description']) : $section->description;
                 $chartType = isset($sectionData['chart_type']) ? $sectionData['chart_type'] : $section->chart_type;
 
-                // Update section sesuai dengan key
+                // Update section
                 $section->update([
                     'title' => $cleanTitle,
                     'description' => $cleanDescription,
-                    'chart_type' => $chartType, // Update chart_type
+                    'chart_type' => $chartType,
                 ]);
             }
         }
@@ -72,6 +71,7 @@ class ContentController extends Controller
             'message' => 'Data berhasil diperbarui.'
         ]);
     }
+
 
     public function storeSection(Request $request)
     {

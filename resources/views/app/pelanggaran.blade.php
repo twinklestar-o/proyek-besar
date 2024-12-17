@@ -99,7 +99,7 @@
       @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
       <div class="flex flex-col items-center mb-5">
       <!-- Dropdown Jenis Chart -->
-      <div id="chartTypeContainer" class="mb-4 w-full sm:w-80">
+      <div id="chartTypeContainer" class="mb-4 w-full sm:w-80 hidden"> <!-- Added 'hidden' class -->
         <label for="chartType" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
         <select id="chartType"
         class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
@@ -112,6 +112,7 @@
           Pie</option>
         </select>
       </div>
+
 
       <!-- Kontainer Chart -->
       <div id="chartContainerPelanggaran" class="w-full sm:w-80 transition-all duration-500">
