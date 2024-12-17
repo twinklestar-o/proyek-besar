@@ -4,10 +4,14 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Absensi Asrama Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Asrama</h1>
-    <p class="text-gray-600 mb-4">
-      Absensi Asrama mencatat kehadiran mahasiswa di asrama selama periode tertentu. Data ini penting untuk memastikan bahwa mahasiswa mematuhi aturan tinggal di asrama dan untuk menjaga keamanan. Informasi ini juga dapat digunakan untuk mengidentifikasi mahasiswa yang sering tidak hadir dan memberikan dukungan yang diperlukan.
-    </pc>
+    <!-- Editable Title -->
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="absensi_asrama" data-type="title">
+      {!! $sections['absensi_asrama']->title ?? 'Absensi Asrama' !!}
+    </h1>
+    <!-- Editable Description -->
+    <p class="text-gray-600 mb-4 editable" data-section="absensi_asrama" data-type="description">
+      {!! $sections['absensi_asrama']->description ?? 'Deskripsi Default' !!}
+    </p>
 
     <!-- Menampilkan Error Jika Ada -->
     @if(isset($errors) && count($errors) > 0)
@@ -92,6 +96,20 @@
       <div class="flex justify-center mb-5">
         <div class="w-full" style="width: 80%;">
         <canvas id="absensiAsramaChart" style="width: 100%;"></canvas>
+        <!-- Dropdown untuk mengganti chart_type, hidden by default -->
+        <div id="chartTypeContainerAbsensi" class="hidden mb-4">
+          <label for="chartTypeAbsensi" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
+          <select id="chartTypeAbsensi"
+          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+          data-section="absensi_asrama" data-type="chart_type">
+          <option value="bar" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>
+            Bar</option>
+          <option value="line" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
+            Line</option>
+          <option value="pie" {{ ($sections['absensi_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>
+            Pie</option>
+          </select>
+        </div>
         </div>
       </div>
     @endif
@@ -131,7 +149,7 @@
       }
 
       absensiAsramaChart = new Chart("absensiAsramaChart", {
-        type: "bar",
+        type: "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}",
         data: {
           labels: type,
           datasets: [
@@ -162,6 +180,8 @@
 
     let absensiAsramaChart;
     updateChart();
+
+
   });
 </script>
 
@@ -188,4 +208,205 @@
     toggleWarning();
   });
 </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const editButton = document.getElementById("editButton");
+    const editIcon = document.getElementById("editIcon");
+    const editText = document.getElementById("editText");
+    const editableElements = document.querySelectorAll(".editable");
+    const chartTypeContainerAbsensi = document.getElementById("chartTypeContainerAbsensi");
+    const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
+    let isEditing = false;
+
+    const changes = {};
+
+    editButton.addEventListener("click", () => {
+      isEditing = !isEditing;
+
+      editableElements.forEach((element) => {
+        const sectionKey = element.getAttribute("data-section");
+        const type = element.getAttribute("data-type");
+
+        if (isEditing) {
+          element.contentEditable = true;
+          element.style.border = "1px dashed gray";
+
+          if (!changes[sectionKey]) {
+            changes[sectionKey] = {};
+          }
+
+          if (type === "title") {
+            changes[sectionKey].originalTitle = element.innerHTML.trim();
+          } else if (type === "description") {
+            changes[sectionKey].originalDescription = element.innerHTML.trim();
+          }
+        } else {
+          element.contentEditable = false;
+          element.style.border = "none";
+
+          if (type === "title") {
+            const updatedTitle = element.innerHTML.trim();
+            if (changes[sectionKey].originalTitle !== updatedTitle) {
+              changes[sectionKey].updatedTitle = updatedTitle;
+            }
+          } else if (type === "description") {
+            const updatedDescription = element.innerHTML.trim();
+            if (changes[sectionKey].originalDescription !== updatedDescription) {
+              changes[sectionKey].updatedDescription = updatedDescription;
+            }
+          }
+        }
+      });
+
+      // Tampilkan/hilangkan dropdown chart type absensi_asrama jika chart ada
+      if (chartTypeContainerAbsensi) {
+        chartTypeContainerAbsensi.classList.toggle('hidden', !isEditing);
+      }
+
+      // Ganti ikon dan teks tombol
+      editIcon.classList.toggle("bi-pencil", !isEditing);
+      editIcon.classList.toggle("bi-check-circle", isEditing);
+      editIcon.style.color = isEditing ? "green" : "orange";
+      editText.textContent = isEditing ? "Done" : "Edit";
+      editText.style.color = isEditing ? "green" : "orange";
+
+      if (!isEditing) {
+        // Simpan hanya perubahan
+        saveChanges();
+      }
+    });
+
+    // Event listener untuk perubahan chart_type pada absensi_asrama
+    if (chartTypeSelectAbsensi) {
+      chartTypeSelectAbsensi.addEventListener("change", function () {
+        const sectionKey = this.getAttribute("data-section");
+        if (!changes[sectionKey]) {
+          changes[sectionKey] = {};
+        }
+        changes[sectionKey].updatedChartType = this.value;
+        // Chart sudah otomatis diupdate di script chart.js di atas saat dropdown change
+      });
+    }
+
+    const saveChanges = () => {
+      const payload = {};
+
+      for (const sectionKey in changes) {
+        payload[sectionKey] = {};
+
+        if (changes[sectionKey].updatedTitle) {
+          payload[sectionKey].title = changes[sectionKey].updatedTitle;
+        }
+
+        if (changes[sectionKey].updatedDescription) {
+          payload[sectionKey].description = changes[sectionKey].updatedDescription;
+        }
+
+        if (changes[sectionKey].updatedChartType) {
+          payload[sectionKey].chart_type = changes[sectionKey].updatedChartType;
+        }
+
+        if (Object.keys(payload[sectionKey]).length === 0) {
+          delete payload[sectionKey];
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        Swal.fire("Info", "Tidak ada perubahan untuk disimpan.", "info");
+        return;
+      }
+
+      fetch("{{ route('sections.update') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "success") {
+            Swal.fire("Sukses", data.message, "success").then(() => location.reload());
+          } else {
+            let errorMessages = '';
+            for (const field in data.errors) {
+              errorMessages += `${field}: ${data.errors[field].join(', ')}<br>`;
+            }
+            Swal.fire("Error", "Terjadi kesalahan:<br>" + errorMessages, "error");
+          }
+        })
+        .catch((error) => {
+          Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
+        });
+    };
+  });
+</script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const barColors = ["royalblue", "royalblue", "royalblue"];
+    const type = ["Absen", "Izin", "Sakit"];
+
+    let absensiAsramaChart;
+
+    function updateChart(chartType = "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}") {
+      const Absen = {{ $data['data']['jumlah_absen'] ?? '0' }};
+      const Izin = {{ $data['data']['jumlah_izin'] ?? '0' }};
+      const Sakit = {{ $data['data']['jumlah_sakit'] ?? '0' }};
+      const jlhAbsensi = [Absen, Izin, Sakit];
+
+      const maxValue = Math.max(...jlhAbsensi);
+      const gap = maxValue;
+      const yMax = maxValue + gap;
+
+      if (absensiAsramaChart) {
+        absensiAsramaChart.destroy();
+      }
+
+      absensiAsramaChart = new Chart("absensiAsramaChart", {
+        type: chartType,
+        data: {
+          labels: type,
+          datasets: [
+            {
+              label: 'Jumlah Mahasiswa yang Absen',
+              backgroundColor: barColors,
+              data: jlhAbsensi
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { display: true },
+            title: {
+              display: true,
+              text: "Jumlah Absensi"
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: yMax
+            }
+          }
+        }
+      });
+    }
+
+    // Inisialisasi chart dengan jenis yang benar
+    updateChart();
+
+    // Event listener untuk live preview saat dropdown chart type berubah
+    const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
+    if (chartTypeSelectAbsensi) {
+      chartTypeSelectAbsensi.addEventListener("change", function () {
+        updateChart(this.value);
+      });
+    }
+  });
+</script>
+
 @endsection

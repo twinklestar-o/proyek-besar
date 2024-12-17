@@ -23,5 +23,9 @@ class DatabaseSeeder extends Seeder
 
         // Optionally create additional random users
         User::factory(10)->create();
+
+        $this->call([
+            SectionSeeder::class,
+        ]);
     }
 }

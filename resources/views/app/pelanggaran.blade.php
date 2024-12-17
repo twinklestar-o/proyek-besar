@@ -17,9 +17,13 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Pelanggaran Section -->
   <div class="bg-white shadow rounded-lg p-6 mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Data Pelanggaran Asrama</h1>
-    <p class="text-gray-600 mb-4">
-      Data Pelanggaran Asrama mencatat semua pelanggaran yang dilakukan oleh mahasiswa selama tinggal di asrama. Ini termasuk pelanggaran terhadap aturan asrama, seperti kebisingan atau membawa tamu tanpa izin. Informasi ini penting untuk menjaga disiplin dan menciptakan lingkungan yang aman bagi semua penghuni asrama.
+    <!-- Editable Title -->
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="pelanggaran_asrama" data-type="title">
+      {!! $sections['pelanggaran_asrama']->title ?? 'Data Pelanggaran Asrama' !!}
+    </h1>
+    <!-- Editable Description -->
+    <p class="text-gray-600 mb-4 editable" data-section="pelanggaran_asrama" data-type="description">
+      {!! $sections['pelanggaran_asrama']->description ?? 'Deskripsi Default' !!}
     </p>
 
     <!-- Filter Form -->
@@ -105,6 +109,18 @@
       <div class="flex justify-center mb-5">
       <div class="w-full" style="width: 80%;">
         <canvas id="pelanggaranChart" style=" width: 100%;"></canvas>
+        <div id="chartTypeContainer" class="hidden mb-4">
+        <label for="chartType" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
+        <select id="chartType"
+          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+          data-section="pelanggaran_asrama" data-type="chart_type">
+          <option value="bar" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>
+          Bar</option>
+          <option value="line" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line</option>
+          <option value="pie" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>
+          Pie</option>
+        </select>
+        </div>
       </div>
       </div>
     @endif
@@ -166,7 +182,169 @@
   });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Edit Section Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const editButton = document.getElementById("editButton");
+    const editIcon = document.getElementById("editIcon");
+    const editText = document.getElementById("editText");
+    const editableElements = document.querySelectorAll(".editable");
+    const chartTypeContainer = document.getElementById("chartTypeContainer");
+    const chartTypeSelect = document.getElementById("chartType");
+    let isEditing = false;
+
+    const changes = {};
+
+    editButton.addEventListener("click", () => {
+      isEditing = !isEditing;
+
+      editableElements.forEach((element) => {
+        const sectionKey = element.getAttribute("data-section");
+        const type = element.getAttribute("data-type");
+
+        if (isEditing) {
+          element.contentEditable = true;
+          element.style.border = "1px dashed gray";
+
+          if (!changes[sectionKey]) {
+            changes[sectionKey] = {};
+          }
+
+          if (type === "title") {
+            changes[sectionKey].originalTitle = element.innerHTML.trim();
+          } else if (type === "description") {
+            changes[sectionKey].originalDescription = element.innerHTML.trim();
+          }
+        } else {
+          element.contentEditable = false;
+          element.style.border = "none";
+
+          if (type === "title") {
+            const updatedTitle = element.innerHTML.trim();
+            if (changes[sectionKey].originalTitle !== updatedTitle) {
+              changes[sectionKey].updatedTitle = updatedTitle;
+            }
+          } else if (type === "description") {
+            const updatedDescription = element.innerHTML.trim();
+            if (changes[sectionKey].originalDescription !== updatedDescription) {
+              changes[sectionKey].updatedDescription = updatedDescription;
+            }
+          }
+        }
+      });
+
+      // Jika chart type container ada (chartnya sudah muncul), tampilkan/hilangkan saat edit
+      if (chartTypeContainer) {
+        chartTypeContainer.classList.toggle('hidden', !isEditing);
+      }
+
+      // Ganti ikon dan teks tombol
+      editIcon.classList.toggle("bi-pencil", !isEditing);
+      editIcon.classList.toggle("bi-check-circle", isEditing);
+      editIcon.style.color = isEditing ? "green" : "orange";
+      editText.textContent = isEditing ? "Done" : "Edit";
+      editText.style.color = isEditing ? "green" : "orange";
+
+      if (!isEditing) {
+        // Simpan hanya perubahan
+        saveChanges();
+      }
+    });
+
+    // Handle Enter key untuk <br> saat editing
+    editableElements.forEach((element) => {
+      element.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const selection = window.getSelection();
+          if (!selection.rangeCount) return;
+          const range = selection.getRangeAt(0);
+
+          const br = document.createElement("br");
+          range.deleteContents();
+          range.insertNode(br);
+
+          range.setStartAfter(br);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+    });
+
+    // Listener untuk chartTypeSelect (jika ada)
+    if (chartTypeSelect) {
+      chartTypeSelect.addEventListener("change", function () {
+        const sectionKey = this.getAttribute("data-section");
+        const type = this.getAttribute("data-type");
+        if (!changes[sectionKey]) {
+          changes[sectionKey] = {};
+        }
+        changes[sectionKey].updatedChartType = this.value;
+      });
+    }
+
+    function saveChanges() {
+      const payload = {};
+
+      // Kumpulkan hanya perubahan yang ada
+      for (const sectionKey in changes) {
+        payload[sectionKey] = {};
+
+        if (changes[sectionKey].updatedTitle) {
+          payload[sectionKey].title = changes[sectionKey].updatedTitle;
+        }
+
+        if (changes[sectionKey].updatedDescription) {
+          payload[sectionKey].description = changes[sectionKey].updatedDescription;
+        }
+
+        if (changes[sectionKey].updatedChartType) {
+          payload[sectionKey].chart_type = changes[sectionKey].updatedChartType;
+        }
+
+        // Jika tidak ada perubahan, hapus keynya
+        if (Object.keys(payload[sectionKey]).length === 0) {
+          delete payload[sectionKey];
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        Swal.fire("Info", "Tidak ada perubahan untuk disimpan.", "info");
+        return;
+      }
+
+      // Kirim data ke server
+      fetch("{{ route('sections.update') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "success") {
+            Swal.fire("Sukses", data.message, "success").then(() => {
+              location.reload();
+            });
+          } else {
+            let errorMessages = '';
+            for (const field in data.errors) {
+              errorMessages += `${field}: ${data.errors[field].join(', ')}<br>`;
+            }
+            Swal.fire("Error", "Terjadi kesalahan:<br>" + errorMessages, "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
+        });
+    }
+  });
+</script>
+
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const barColors = ["blue", "orange", "red"];
@@ -191,7 +369,7 @@
       }
 
       pelanggaranChart = new Chart("pelanggaranChart", {
-        type: "bar",
+        type: "{{ $sections['pelanggaran_asrama']->chart_type ?? 'bar' }}",
         data: {
           labels: type,
           datasets: [
@@ -224,6 +402,7 @@
     if ({{ isset($data) && isset($data['data']) && count($data['data']) > 0 ? 'true' : 'false' }}) {
       updateChart();
     }
+
   });
 </script>
 

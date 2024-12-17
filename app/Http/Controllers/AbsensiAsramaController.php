@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
+use App\Models\Section;
 
 class AbsensiAsramaController extends Controller
 {
@@ -19,6 +20,9 @@ class AbsensiAsramaController extends Controller
     {
         $data = null;
         $errors = [];
+
+        // Retrieve sections for Absensi Asrama
+        $sections = Section::all()->keyBy('section');
 
         // Retrieve filters from request or session
         $idAsrama = $request->input('id_asrama', session('absensi_asrama.last_id_asrama', ''));
@@ -50,83 +54,100 @@ class AbsensiAsramaController extends Controller
 
         // Pastikan 'id_asrama' diisi
         if (empty($idAsrama)) {
-            return view('app.absensi_asrama', compact('data', 'errors', 'idAsrama', 'startTime', 'endTime', 'day', 'month', 'year'));
-        }
-
-        // Retrieve or fetch API token
-        $apiToken = session('api_token') ?? $this->getApiToken();
-
-        if (!$apiToken) {
-            Log::error('Gagal mendapatkan API token.');
-            $errors[] = 'Tidak dapat mengautentikasi dengan API.';
-            return view('app.absensi_asrama', compact('data', 'errors', 'idAsrama', 'startTime', 'endTime', 'day', 'month', 'year'));
+            return view('app.absensi_asrama', compact('data', 'sections', 'errors', 'idAsrama', 'startTime', 'endTime', 'day', 'month', 'year'));
         }
 
         try {
-            // Build query parameters
-            $queryParams = array_filter([
-                'id_asrama' => $idAsrama,
-                'start_time' => $startTime,
-                'end_time' => $endTime,
-                'day' => $day,
-                'month' => $month,
-                'year' => $year,
-            ]);
-
-            // Cache key berdasarkan parameter query
-            $cacheKey = 'absensiAsrama_' . md5(json_encode($queryParams));
-
-            // Ambil data dari cache atau API
-            $data = Cache::remember($cacheKey, 300, function () use ($apiToken, $queryParams) {
-                $client = new Client(['verify' => false, 'timeout' => 10]);
-
-                $response = $client->get('https://cis-dev.del.ac.id/api/statistik-api/get-total-absensi-by-asrama', [
-                    'headers' => [
-                        'Authorization' => "Bearer $apiToken",
-                        'Accept' => 'application/json',
-                    ],
-                    'query' => $queryParams,
-                ]);
-
-                if ($response->getStatusCode() === 200) {
-                    return json_decode($response->getBody(), true);
-                }
-
-                Log::warning('Respons API tidak terduga.', ['status' => $response->getStatusCode()]);
-                return null;
-            });
-
-            // Jika data null, tambahkan error
+            $data = $this->fetchAbsensiAsramaData($idAsrama, $startTime, $endTime, $day, $month, $year);
             if (!$data) {
                 $errors[] = 'Data tidak tersedia atau terjadi kesalahan saat mengambil data.';
-            } else {
-                Log::info('Absensi Asrama API response:', ['response' => $data]);
             }
         } catch (\Exception $e) {
             Log::error('Error saat mengambil data Absensi Asrama:', ['message' => $e->getMessage()]);
+            $errors[] = 'Terjadi kesalahan saat mengambil data Absensi Asrama.';
+        }
 
-            // Jika token expired, coba refresh
+        return view('app.absensi_asrama', compact('data', 'sections', 'errors', 'idAsrama', 'startTime', 'endTime', 'day', 'month', 'year'));
+    }
+
+    /**
+     * Fetches the Absensi Asrama data from the API with token handling.
+     *
+     * @param string $idAsrama
+     * @param string|null $startTime
+     * @param string|null $endTime
+     * @param int|null $day
+     * @param int|null $month
+     * @param int|null $year
+     * @return array|null
+     */
+    protected function fetchAbsensiAsramaData($idAsrama, $startTime, $endTime, $day, $month, $year)
+    {
+        $queryParams = array_filter([
+            'id_asrama' => $idAsrama,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'day' => $day,
+            'month' => $month,
+            'year' => $year,
+        ]);
+
+        $cacheKey = 'absensiAsrama_' . md5(json_encode($queryParams));
+        $apiToken = session('api_token') ?? $this->getApiToken();
+
+        if (!$apiToken) {
+            throw new \Exception('Tidak dapat mengautentikasi dengan API.');
+        }
+
+        try {
+            return Cache::remember($cacheKey, 300, function () use ($apiToken, $queryParams) {
+                return $this->makeApiRequest($apiToken, $queryParams);
+            });
+        } catch (\Exception $e) {
             if ($e->getCode() === 401) {
-                Log::warning('Token kedaluwarsa, mencoba menyegarkan...');
+                Log::warning('Token API kadaluarsa. Mencoba refresh token...');
                 session()->forget('api_token');
                 $apiToken = $this->getApiToken();
 
                 if ($apiToken) {
-                    // Ulangi permintaan jika token berhasil diperbarui
-                    return $this->getAbsensiAsrama($request);
-                } else {
-                    $errors[] = 'Tidak dapat memperbarui token API.';
+                    return $this->makeApiRequest($apiToken, $queryParams);
                 }
-            } else {
-                $errors[] = 'Terjadi kesalahan saat mengambil data Absensi Asrama.';
-            }
-        }
 
-        return view('app.absensi_asrama', compact('data', 'errors', 'idAsrama', 'startTime', 'endTime', 'day', 'month', 'year'));
+                throw new \Exception('Gagal mendapatkan token API baru.');
+            }
+
+            throw $e;
+        }
     }
 
     /**
-     * Mendapatkan token API dengan melakukan autentikasi.
+     * Makes an API request to fetch Absensi Asrama data.
+     *
+     * @param string $apiToken
+     * @param array $queryParams
+     * @return array|null
+     */
+    protected function makeApiRequest($apiToken, $queryParams)
+    {
+        $client = new Client(['verify' => false, 'timeout' => 60, 'http_errors' => false]);
+        $response = $client->get('https://cis-dev.del.ac.id/api/statistik-api/get-total-absensi-by-asrama', [
+            'headers' => [
+                'Authorization' => "Bearer $apiToken",
+                'Accept' => 'application/json',
+            ],
+            'query' => $queryParams,
+        ]);
+
+        if ($response->getStatusCode() === 200) {
+            return json_decode($response->getBody(), true);
+        }
+
+        Log::error('Respons API tidak terduga.', ['status' => $response->getStatusCode()]);
+        throw new \Exception('Error saat melakukan request ke API.', $response->getStatusCode());
+    }
+
+    /**
+     * Mendapatkan token API dengan mencoba autentikasi ulang.
      *
      * @return string|null
      */
@@ -134,7 +155,7 @@ class AbsensiAsramaController extends Controller
     {
         try {
             Log::info('Mencoba login ke API...');
-            $client = new Client(['verify' => false, 'timeout' => 10]);
+            $client = new Client(['verify' => false, 'timeout' => 60, 'http_errors' => false]);
 
             $response = $client->post('https://cis-dev.del.ac.id/api/jwt-api/do-auth', [
                 'form_params' => [

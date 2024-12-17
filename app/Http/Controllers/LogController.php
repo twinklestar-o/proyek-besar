@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\Utils;
+use App\Models\Section;
 
 class LogController extends Controller
 {
@@ -16,6 +17,9 @@ class LogController extends Controller
         $dataMasuk = null;
         $dataKeluar = null;
         $errors = [];
+
+        // Retrieve sections
+        $sections = Section::all()->keyBy('section');
 
         // Retrieve filters from request or session
         $startMasuk = $request->input('start_masuk', session('last_start_masuk', ''));
@@ -47,7 +51,7 @@ class LogController extends Controller
 
         if (!$hasMasukParams && !$hasKeluarParams) {
             $errors = ['Harap isi setidaknya salah satu parameter.'];
-            return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
+            return view('app.log', compact('sections', 'dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
         }
 
         // Obtain API token
@@ -56,7 +60,7 @@ class LogController extends Controller
             $apiToken = $this->getApiToken();
             if (!$apiToken) {
                 $errors[] = 'Unable to authenticate with the API. Please try again later.';
-                return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
+                return view('app.log', compact('sections', 'dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
             }
         }
 
@@ -129,7 +133,7 @@ class LogController extends Controller
             $errors[] = 'Unable to fetch data from the API. Please try again later.';
         }
 
-        return view('app.log', compact('dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
+        return view('app.log', compact('sections', 'dataMasuk', 'dataKeluar', 'errors', 'startMasuk', 'endMasuk', 'startKeluar', 'endKeluar'));
     }
 
     protected function getLogPromise(Client $client, $apiToken, array $formParams, $retry = true)

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\Utils;
+use App\Models\Section;
 
 class HomeController extends Controller
 {
@@ -49,7 +50,9 @@ class HomeController extends Controller
         if (!$apiToken) {
             Log::error('Failed to obtain API token.');
             $errors[] = 'Unable to authenticate with the API. Please try again later.';
-            return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi', 'errors'));
+            // Mengambil data sections
+            $sections = Section::all()->keyBy('section');
+            return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi', 'errors', 'sections'));
         }
 
         try {
@@ -182,7 +185,10 @@ class HomeController extends Controller
             $errors[] = 'Terjadi kesalahan saat menghubungi API.';
         }
 
-        return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi', 'errors'));
+        // Mengambil data sections
+        $sections = Section::all()->keyBy('section');
+
+        return view('app.home', compact('dataMahasiswa', 'prodiList', 'angkatan', 'prodi', 'errors', 'sections'));
     }
 
     /**

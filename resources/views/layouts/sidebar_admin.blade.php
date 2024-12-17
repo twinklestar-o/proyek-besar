@@ -277,10 +277,6 @@
                     .then((response) => response.json())
                     .then((data) => {
                     })
-                    .catch((error) => {
-                        console.error("Error saving changes:", error);
-                        alert("An error occurred while saving changes.");
-                    });
             }
 
         });

@@ -10,7 +10,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <!-- Include any additional CSS if necessary -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
-
+  <!-- SweetAlert2 CDN -->
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="flex flex-col min-h-screen">

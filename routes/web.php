@@ -30,8 +30,8 @@ Route::get('/pelanggaran', [PelanggaranController::class, 'getPelanggaranByAsram
 Route::get('/absensi-kelas/matkul', [AbsensiKelasController::class, 'getMatkulAjax'])->name('absensi.kelas.matkul');
 Route::get('/absensi-kelas/absensi', [AbsensiKelasController::class, 'fetchTotalKehadiranAjax'])->name('absensi.kelas.absensi');
 
-// Routes for authenticated users
-Route::middleware('auth')->group(function () {
+// Routes for authenticated users (admin)
+Route::middleware(['auth'])->group(function () {
     // Home route
     Route::get('/admin/home', [HomeController::class, 'index'])->name('home.auth');
     // Absensi Kelas
@@ -42,4 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/absensi-asrama', [AbsensiAsramaController::class, 'getAbsensiAsrama'])->name('absensi.asrama.auth');
     // Pelanggaran
     Route::get('/admin/pelanggaran', [PelanggaranController::class, 'getPelanggaranByAsrama'])->name('pelanggaran.auth');
+
+    // SectionController Routes
+    Route::get('/admin/api/sections', [ContentController::class, 'getSections'])->name('sections.get');
+    Route::post('/admin/api/sections/update', [ContentController::class, 'updateSections'])->name('sections.update');
 });

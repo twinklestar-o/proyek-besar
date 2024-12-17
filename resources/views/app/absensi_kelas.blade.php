@@ -3,9 +3,13 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
   <div class="bg-white shadow rounded-lg p-6 mb-8">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Absensi Kelas</h1>
-    <p class="text-gray-600 mb-4">
-      Absensi Kelas mencatat kehadiran mahasiswa dalam setiap sesi perkuliahan. Data ini memberikan gambaran mengenai partisipasi mahasiswa dalam proses belajar mengajar, serta membantu dalam evaluasi keterlibatan akademik mereka.
+    <!-- Editable Title -->
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="absensi_kelas" data-type="title">
+      {!! $sections['absensi_kelas']->title ?? 'Absensi Kelas' !!}
+    </h1>
+    <!-- Editable Description -->
+    <p class="text-gray-600 mb-4 editable" data-section="absensi_kelas" data-type="description">
+      {!! $sections['absensi_kelas']->description ?? 'Default Description' !!}
     </p>
 
     <!-- Filter Form -->
@@ -18,7 +22,7 @@
           required>
           <option value="">Pilih Prodi</option>
           @foreach($prodiList as $pid => $pname)
-        <option value="{{ $pid }}" {{ request('prodi_id') == $pid ? 'selected' : '' }}>{{ $pname }}</option>
+        <option value="{{ $pid }}" {{ ($selectedProdi == $pid) ? 'selected' : '' }}>{{ $pname }}</option>
       @endforeach
         </select>
       </div>
@@ -31,7 +35,7 @@
           required>
           <option value="">Pilih Semester</option>
           @for($i = 1; $i <= 8; $i++)
-        <option value="{{ $i }}" {{ request('semester') == $i ? 'selected' : '' }}>Semester {{ $i }}</option>
+        <option value="{{ $i }}" {{ ($selectedSemester == $i) ? 'selected' : '' }}>Semester {{ $i }}</option>
       @endfor
         </select>
       </div>
@@ -44,7 +48,7 @@
           required>
           <option value="">Pilih Tahun Ajar</option>
           @foreach($tahunAjarList as $thn)
-        <option value="{{ $thn }}" {{ request('ta') == $thn ? 'selected' : '' }}>{{ $thn }}</option>
+        <option value="{{ $thn }}" {{ ($selectedTa == $thn) ? 'selected' : '' }}>{{ $thn }}</option>
       @endforeach
         </select>
       </div>
@@ -69,7 +73,13 @@
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           required>
           <option value="">Pilih Mata Kuliah</option>
-          <!-- Opsi akan diisi oleh JavaScript -->
+          @if(isset($matkulList) && count($matkulList) > 0)
+        @foreach($matkulList as $matkul)
+      <option value="{{ $matkul['kode_mk'] }}" {{ ($selectedMatkul == $matkul['kode_mk']) ? 'selected' : '' }}>
+      {{ $matkul['nama_matkul'] }} ({{ $matkul['kode_mk'] }}) - Semester {{ $matkul['sem'] }}
+      </option>
+    @endforeach
+      @endif
         </select>
       </div>
 
@@ -79,37 +89,46 @@
           class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
           required>
           <option value="">Pilih Tahun Kurikulum</option>
-          <!-- Opsi akan diisi oleh JavaScript -->
+          @if(isset($tahunKurikulum) && count($tahunKurikulum) > 0)
+        @foreach($tahunKurikulum as $tahun)
+      <option value="{{ $tahun['id_kur'] }}" {{ ($selectedKurikulum == $tahun['id_kur']) ? 'selected' : '' }}>
+      {{ $tahun['id_kur'] }}
+      </option>
+    @endforeach
+      @endif
         </select>
       </div>
 
-      <!-- Start Time -->
-      <div>
-        <label for="start_time" class="block text-gray-700 font-semibold mb-2">Dari tanggal:</label>
-        <input type="date" name="start_time" id="start_time"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('start_time') }}">
-      </div>
+      <!-- Bagian Tanggal dan Tombol Ambil Data (Disembunyikan Secara Default) -->
+      <div id="tanggalDanAmbilDataSection" style="display: none;">
+        <!-- Start Time -->
+        <div>
+          <label for="start_time" class="block text-gray-700 font-semibold mb-2">Dari tanggal:</label>
+          <input type="date" name="start_time" id="start_time"
+            class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+            value="{{ $selectedStartTime }}">
+        </div>
 
-      <!-- End Time -->
-      <div>
-        <label for="end_time" class="block text-gray-700 font-semibold mb-2">Sampai tanggal:</label>
-        <input type="date" name="end_time" id="end_time"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          value="{{ request('end_time') }}">
-      </div>
+        <!-- End Time -->
+        <div>
+          <label for="end_time" class="block text-gray-700 font-semibold mb-2">Sampai tanggal:</label>
+          <input type="date" name="end_time" id="end_time"
+            class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+            value="{{ $selectedEndTime }}">
+        </div>
 
-      <!-- Tombol Ambil Data -->
-      <div>
-        <button type="button" id="ambilData"
-          class="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring focus:ring-green-200">
-          Ambil Data
-        </button>
-      </div>
+        <!-- Tombol Ambil Data -->
+        <div>
+          <button type="button" id="ambilData"
+            class="bg-green-600 text-white font-bold mt-3 py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring focus:ring-green-200">
+            Ambil Data
+          </button>
+        </div>
 
-      <!-- Indikator Loading untuk Ambil Data -->
-      <div id="loadingData" style="display: none;">
-        <p class="text-green-500">Memuat Data Absensi...</p>
+        <!-- Indikator Loading untuk Ambil Data -->
+        <div id="loadingData" style="display: none;">
+          <p class="text-green-500">Memuat Data Absensi...</p>
+        </div>
       </div>
     </form>
 
@@ -174,12 +193,14 @@
 
       // Populate mata kuliah dengan informasi semester
       $.each(matkulList, function (index, matkul) {
-        $('#kode_mk').append('<option value="' + matkul.kode_mk + '">' + matkul.nama_matkul + ' (' + matkul.kode_mk + ') - Semester ' + matkul.sem + '</option>');
+        let selected = "{{ $selectedMatkul }}" === matkul.kode_mk ? 'selected' : '';
+        $('#kode_mk').append('<option value="' + matkul.kode_mk + '" ' + selected + '>' + matkul.nama_matkul + ' (' + matkul.kode_mk + ') - Semester ' + matkul.sem + '</option>');
       });
 
       // Populate tahun kurikulum
       $.each(tahunKurikulum, function (index, tahun) {
-        $('#id_kur').append('<option value="' + tahun.id_kur + '">' + tahun.id_kur + '</option>');
+        let selected = "{{ $selectedKurikulum }}" === tahun.id_kur ? 'selected' : '';
+        $('#id_kur').append('<option value="' + tahun.id_kur + '" ' + selected + '>' + tahun.id_kur + '</option>');
       });
 
       // Tampilkan dropdown matkul dan tahun kurikulum
@@ -187,51 +208,10 @@
       $('#tahunKurikulumSection').show();
     }
 
-    // Event handler untuk tombol "Ambil Mata Kuliah"
-    $('#ambilMatkul').click(function () {
-      const prodi_id = parseInt($('#prodi_id').val());
-      const semester = parseInt($('#semester').val());
-      const ta = parseInt($('#ta').val());
-
-      console.log('Mengambil Mata Kuliah dengan prodi_id:', prodi_id, 'semester:', semester, 'ta:', ta);
-
-      if (prodi_id && semester && ta) {
-        $('#loadingMatkul').show();
-        $.ajax({
-          url: "{{ route('absensi.kelas.matkul') }}",
-          type: "GET",
-          data: {
-            prodi_id: prodi_id,
-            semester: semester,
-            ta: ta,
-          },
-          success: function (response) {
-            $('#loadingMatkul').hide();
-            if (response.matkulList && response.tahunKurikulum) {
-              showMatkulAndTahunKurikulum(response.matkulList, response.tahunKurikulum);
-            } else {
-              alert('Data Mata Kuliah atau Tahun Kurikulum tidak ditemukan.');
-            }
-          },
-          error: function (xhr) {
-            $('#loadingMatkul').hide();
-            if (xhr.responseJSON && xhr.responseJSON.details) {
-              let errorMsg = 'Input tidak valid:\n';
-              $.each(xhr.responseJSON.details, function (field, messages) {
-                errorMsg += field + ': ' + messages.join(', ') + '\n';
-              });
-              alert(errorMsg);
-            } else if (xhr.responseJSON && xhr.responseJSON.error) {
-              alert(xhr.responseJSON.error);
-            } else {
-              alert('Gagal mengambil data Mata Kuliah. Pastikan Prodi, Semester, dan Tahun Ajar sudah benar.');
-            }
-          }
-        });
-      } else {
-        alert('Silakan pilih Prodi, Semester, dan Tahun Ajar terlebih dahulu.');
-      }
-    });
+    // Fungsi untuk menampilkan Tanggal dan Tombol Ambil Data
+    function showTanggalDanAmbilData() {
+      $('#tanggalDanAmbilDataSection').show();
+    }
 
     // Fungsi untuk menampilkan data Absensi
     function showAbsensiData(data) {
@@ -320,6 +300,72 @@
       }
     }
 
+    // Inisialisasi tampilan berdasarkan data yang ada saat page load
+    @if(isset($matkulList) && count($matkulList) > 0)
+    showMatkulAndTahunKurikulum(@json($matkulList), @json($tahunKurikulum));
+    showTanggalDanAmbilData();
+
+    @if(isset($absensiData) && count($absensiData) > 0)
+    showAbsensiData(@json($absensiData));
+  @elseif(isset($absensiData) && count($absensiData) === 0)
+  $('#tabelAbsensiSection').hide();
+  $('#chartSection').hide();
+  $('#pesanTidakAdaData').show();
+@endif
+  @endif
+
+    // Event handler untuk tombol "Ambil Mata Kuliah"
+    $('#ambilMatkul').click(function () {
+      const prodi_id = parseInt($('#prodi_id').val());
+      const semester = parseInt($('#semester').val());
+      const ta = parseInt($('#ta').val());
+
+      console.log('Mengambil Mata Kuliah dengan prodi_id:', prodi_id, 'semester:', semester, 'ta:', ta);
+
+      if (prodi_id && semester && ta) {
+        $('#loadingMatkul').show();
+        $.ajax({
+          url: "{{ route('absensi.kelas.matkul') }}",
+          type: "GET",
+          data: {
+            prodi_id: prodi_id,
+            semester: semester,
+            ta: ta,
+          },
+          success: function (response) {
+            $('#loadingMatkul').hide();
+            if (response.matkulList && response.tahunKurikulum) {
+              showMatkulAndTahunKurikulum(response.matkulList, response.tahunKurikulum);
+              showTanggalDanAmbilData(); // Tampilkan bagian tanggal dan tombol setelah Mata Kuliah dimuat
+
+              // Reset Absensi data
+              $('#tabelAbsensiSection').hide();
+              $('#chartSection').hide();
+              $('#pesanTidakAdaData').hide();
+            } else {
+              alert('Data Mata Kuliah atau Tahun Kurikulum tidak ditemukan.');
+            }
+          },
+          error: function (xhr) {
+            $('#loadingMatkul').hide();
+            if (xhr.responseJSON && xhr.responseJSON.details) {
+              let errorMsg = 'Input tidak valid:\n';
+              $.each(xhr.responseJSON.details, function (field, messages) {
+                errorMsg += field + ': ' + messages.join(', ') + '\n';
+              });
+              alert(errorMsg);
+            } else if (xhr.responseJSON && xhr.responseJSON.error) {
+              alert(xhr.responseJSON.error);
+            } else {
+              alert('Gagal mengambil data Mata Kuliah. Pastikan Prodi, Semester, dan Tahun Ajar sudah benar.');
+            }
+          }
+        });
+      } else {
+        alert('Silakan pilih Prodi, Semester, dan Tahun Ajar terlebih dahulu.');
+      }
+    });
+
     // Event handler untuk tombol "Ambil Data"
     $('#ambilData').click(function () {
       const kode_mk = $('#kode_mk').val();
@@ -370,12 +416,184 @@
         alert('Silakan pilih Mata Kuliah dan Tahun Kurikulum terlebih dahulu.');
       }
     });
+  });
+</script>
 
-    // Jika ada data matkul (misalnya setelah reload dengan data sebelumnya), tampilkan dropdown
-    @if(old('kode_mk') || request('kode_mk'))
-    $('#matkulSection').show();
-    $('#tahunKurikulumSection').show();
-  @endif
+<!-- Script for Editable Sections -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const editButton = document.getElementById("editButton");
+    const editableElements = document.querySelectorAll(".editable");
+    let isEditing = false;
+
+    const changes = {};
+
+    // Toggle Editing
+    editButton.addEventListener("click", () => {
+      isEditing = !isEditing;
+
+      editableElements.forEach((element) => {
+        const sectionKey = element.getAttribute("data-section");
+        const type = element.getAttribute("data-type");
+
+        if (isEditing) {
+          element.contentEditable = true;
+          element.style.border = "1px dashed gray";
+
+          if (!changes[sectionKey]) {
+            changes[sectionKey] = {};
+          }
+
+          if (type === "title") {
+            changes[sectionKey].originalTitle = element.innerHTML.trim();
+          } else if (type === "description") {
+            changes[sectionKey].originalDescription = element.innerHTML.trim();
+          }
+        } else {
+          element.contentEditable = false;
+          element.style.border = "none";
+
+          if (type === "title") {
+            const updatedTitle = element.innerHTML.trim();
+            if (changes[sectionKey].originalTitle !== updatedTitle) {
+              changes[sectionKey].updatedTitle = updatedTitle;
+            }
+          } else if (type === "description") {
+            const updatedDescription = element.innerHTML.trim();
+            if (changes[sectionKey].originalDescription !== updatedDescription) {
+              changes[sectionKey].updatedDescription = updatedDescription;
+            }
+          }
+        }
+      });
+
+      if (!isEditing) {
+        saveChanges();
+      }
+    });
+
+    function saveChanges() {
+      const payload = {};
+
+      for (const sectionKey in changes) {
+        payload[sectionKey] = {};
+        if (changes[sectionKey].updatedTitle) {
+          payload[sectionKey].title = changes[sectionKey].updatedTitle;
+        }
+        if (changes[sectionKey].updatedDescription) {
+          payload[sectionKey].description = changes[sectionKey].updatedDescription;
+        }
+        if (Object.keys(payload[sectionKey]).length === 0) {
+          delete payload[sectionKey];
+        }
+      }
+
+      if (Object.keys(payload).length === 0) {
+        Swal.fire("Info", "Tidak ada perubahan untuk disimpan.", "info");
+        return;
+      }
+
+      fetch("{{ route('sections.update') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify(payload),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "success") {
+            Swal.fire("Sukses", data.message, "success").then(() => {
+              location.reload();
+            });
+          } else {
+            console.error("Error:", data.errors);
+            Swal.fire("Error", "Terjadi kesalahan saat menyimpan perubahan.", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
+        });
+    }
+  });
+</script>
+
+<script>$(document).ready(function () {
+    function fetchMatkul(prodi_id, semester, ta) {
+      $('#loadingMatkul').show();
+
+      $.ajax({
+        url: "{{ route('absensi.kelas.matkul') }}",
+        type: "GET",
+        data: { prodi_id, semester, ta },
+        success: function (response) {
+          $('#loadingMatkul').hide();
+          if (response.matkulList && response.matkulList.length > 0) {
+            showMatkulAndTahunKurikulum(response.matkulList, response.tahunKurikulum);
+            showTanggalDanAmbilData();
+          } else {
+            alert('Data Mata Kuliah tidak ditemukan. Memuat ulang API...');
+            fetchMatkul(prodi_id, semester, ta); // Muat ulang API
+          }
+        },
+        error: function () {
+          $('#loadingMatkul').hide();
+          alert('Gagal memuat data Mata Kuliah.');
+        }
+      });
+    }
+
+    function fetchAbsensiData(kode_mk, id_kur, start_time, end_time) {
+      $('#loadingData').show();
+
+      $.ajax({
+        url: "{{ route('absensi.kelas.absensi') }}",
+        type: "GET",
+        data: { kode_mk, id_kur, start_time, end_time },
+        success: function (response) {
+          $('#loadingData').hide();
+          if (response.data && response.data.length > 0) {
+            showAbsensiData(response.data);
+          } else {
+            alert('Data Absensi tidak ditemukan. Memuat ulang API...');
+            fetchAbsensiData(kode_mk, id_kur, start_time, end_time); // Muat ulang API
+          }
+        },
+        error: function () {
+          $('#loadingData').hide();
+          alert('Gagal memuat data Absensi.');
+        }
+      });
+    }
+
+    // Panggil fetchMatkul ketika tombol diklik
+    $('#ambilMatkul').click(function () {
+      const prodi_id = $('#prodi_id').val();
+      const semester = $('#semester').val();
+      const ta = $('#ta').val();
+
+      if (prodi_id && semester && ta) {
+        fetchMatkul(prodi_id, semester, ta);
+      } else {
+        alert('Pilih Prodi, Semester, dan Tahun Ajar.');
+      }
+    });
+
+    // Panggil fetchAbsensiData ketika tombol diklik
+    $('#ambilData').click(function () {
+      const kode_mk = $('#kode_mk').val();
+      const id_kur = $('#id_kur').val();
+      const start_time = $('#start_time').val();
+      const end_time = $('#end_time').val();
+
+      if (kode_mk && id_kur) {
+        fetchAbsensiData(kode_mk, id_kur, start_time, end_time);
+      } else {
+        alert('Pilih Mata Kuliah dan Tahun Kurikulum.');
+      }
+    });
   });
 </script>
 @endsection
