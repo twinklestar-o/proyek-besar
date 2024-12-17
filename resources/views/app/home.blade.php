@@ -15,12 +15,10 @@
 
     <!-- Total Mahasiswa Aktif Section -->
     <div class="bg-white shadow rounded-lg p-6 mb-8">
-
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="total_mahasiswa_aktif"
-            data-type="title">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="total_mahasiswa_aktif">
             {!! $sections['total_mahasiswa_aktif']->title ?? 'Total Mahasiswa Aktif' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="total_mahasiswa_aktif" data-type="description">
+        <p class="text-gray-600 mb-4 editable" data-section="total_mahasiswa_aktif">
             {!! $sections['total_mahasiswa_aktif']->description ?? 'Deskripsi Default' !!}
         </p>
 
@@ -60,7 +58,9 @@
             </div>
         </form>
 
+        <!-- Display Data -->
         @php
+            // Gunakan variabel $selectedAngkatan & $selectedProdi di bawah ini agar lebih konsisten
             $angkatan = $selectedAngkatan;
             $prodi = $selectedProdi;
         @endphp
@@ -75,25 +75,12 @@
                         <canvas id="semuaProdiAngkatanChart" style=" width: 100%;"></canvas>
                     </div>
                 </div>
-
-                <!-- MODIFIKASI UNTUK CHART TYPE EDIT: Dropdown untuk total_mahasiswa_aktif -->
-                <div id="chartTypeContainerTotalMahasiswa" class="hidden mb-4">
-                    <label for="chartTypeTotalMahasiswa" class="block text-gray-700 font-semibold mb-2">Pilih Jenis
-                        Chart:</label>
-                    <select id="chartTypeTotalMahasiswa"
-                        class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-                        data-section="total_mahasiswa_aktif" data-type="chart_type">
-                        <option value="bar" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar</option>
-                        <option value="line" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line</option>
-                        <option value="pie" {{ ($sections['total_mahasiswa_aktif']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie</option>
-                    </select>
-                </div>
             @endif
 
             <ul class="text-green-600 font-semibold">
                 @if(!empty($dataMahasiswa))
                     @foreach ($dataMahasiswa as $prodiName => $jumlah)
-                        @if($prodiName !== 'total')
+                        @if($prodiName !== 'total') <!-- Abaikan key 'total' -->
                             <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
                         @endif
                     @endforeach
@@ -103,106 +90,242 @@
                 @endif
             </ul>
 
+            <!-- Inisialisasi Chart untuk Semua Prodi dan Semua Angkatan -->
             @if(!empty($dataMahasiswa))
                 <script>
                     document.addEventListener("DOMContentLoaded", function () {
-                        let semuaProdiAngkatanChart;
+                        // Mengumpulkan data prodi dan jumlahnya
+                        const prodiLabels = [];
+                        const prodiCounts = [];
 
-                        function initializeSemuaProdiAngkatanChart(chartType) {
-                            const prodiLabels = [];
-                            const prodiCounts = [];
+                        @foreach($dataMahasiswa as $prodiName => $jumlah)
+                            @if($prodiName !== 'total')
+                                prodiLabels.push("{{ $prodiName }}");
+                                prodiCounts.push({{ $jumlah }});
+                            @endif
+                        @endforeach
 
-                            @foreach($dataMahasiswa as $prodiName => $jumlah)
-                                @if($prodiName !== 'total')
-                                    prodiLabels.push("{{ $prodiName }}");
-                                    prodiCounts.push({{ $jumlah }});
-                                @endif
-                            @endforeach
-
-                            const ctxSemuaProdiAngkatan = document.getElementById('semuaProdiAngkatanChart').getContext('2d');
-                            semuaProdiAngkatanChart = new Chart(ctxSemuaProdiAngkatan, {
-                                type: chartType,
-                                data: {
-                                    labels: prodiLabels,
-                                    datasets: [{
-                                        label: 'Jumlah Mahasiswa per Prodi',
-                                        data: prodiCounts,
-                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                        borderColor: 'rgba(54, 162, 235, 1)',
-                                        borderWidth: 1
-                                    }]
+                        const ctxSemuaProdiAngkatan = document.getElementById('semuaProdiAngkatanChart').getContext('2d');
+                        const semuaProdiAngkatanChart = new Chart(ctxSemuaProdiAngkatan, {
+                            type: 'bar',
+                            data: {
+                                labels: prodiLabels,
+                                datasets: [{
+                                    label: 'Jumlah Mahasiswa per Prodi',
+                                    data: prodiCounts,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    legend: { display: true },
+                                    title: {
+                                        display: true,
+                                        text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
+                                    }
                                 },
-                                options: {
-                                    plugins: {
-                                        legend: { display: true },
-                                        title: {
-                                            display: true,
-                                            text: 'Jumlah Mahasiswa di Semua Prodi dan Semua Angkatan'
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: { precision: 0 }
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            precision: 0
                                         }
                                     }
                                 }
-                            });
-                            return semuaProdiAngkatanChart;
-                        }
-
-                        let currentChartType = "{{ $sections['total_mahasiswa_aktif']->chart_type ?? 'bar' }}";
-                        let currentChart = initializeSemuaProdiAngkatanChart(currentChartType);
-
-                        const chartTypeSelectTotalMahasiswa = document.getElementById("chartTypeTotalMahasiswa");
-                        if (chartTypeSelectTotalMahasiswa) {
-                            chartTypeSelectTotalMahasiswa.addEventListener("change", function () {
-                                const selectedChartType = this.value;
-                                currentChart.destroy();
-                                currentChart = initializeSemuaProdiAngkatanChart(selectedChartType);
-
-                                // Simpan perubahan chart_type
-                                const sectionKey = this.getAttribute("data-section");
-                                if (!window.sectionChanges) {
-                                    window.sectionChanges = {};
-                                }
-                                if (!window.sectionChanges[sectionKey]) {
-                                    window.sectionChanges[sectionKey] = {};
-                                }
-                                window.sectionChanges[sectionKey].updatedChartType = selectedChartType;
-                            });
-                        }
-
-                        window.initializeSemuaProdiAngkatanChart = initializeSemuaProdiAngkatanChart;
-                        window.currentChartTotalMahasiswa = currentChart;
+                            }
+                        });
                     });
                 </script>
             @endif
         @elseif(!$angkatan && $prodi)
-            <!-- Kondisi lain, Anda bisa menambahkan dropdown chart_type dengan logika yang sama -->
-            <!-- ... -->
+            <!-- Semua Angkatan, Prodi Terisi -->
+            <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}
+            </h2>
+
+            @if(!empty($dataMahasiswa))
+                <div class="flex justify-center mb-5">
+                    <div class="w-full" style="width: 80%;">
+                        <canvas id="semuaAngkatanChart" style=" width: 100%;"></canvas>
+                    </div>
+                </div>
+            @endif
+
+            <ul class="text-green-600 font-semibold">
+                @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
+                    @foreach($dataMahasiswa as $year => $jumlah)
+                        <li>Angkatan {{ $year }}: {{ $jumlah }} mahasiswa</li>
+                    @endforeach
+                    <li class="font-bold text-green-600">Total di Prodi: {{ array_sum($dataMahasiswa) }} mahasiswa</li>
+                @else
+                    <li class="text-red-500">Data tidak tersedia.</li>
+                @endif
+            </ul>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const angkatanData = @json($dataMahasiswa); // Ambil data angkatan
+                    const angkatanLabels = Object.keys(angkatanData); // Ambil label angkatan
+                    const angkatanCounts = Object.values(angkatanData); // Ambil jumlah mahasiswa per angkatan
+
+                    const semuaAngkatanChart = new Chart("semuaAngkatanChart", {
+                        type: "bar",
+                        data: {
+                            labels: angkatanLabels,
+                            datasets: [{
+                                label: 'Jumlah Mahasiswa per Angkatan',
+                                backgroundColor: angkatanLabels.map(label => label === '{{ $angkatan }}' ? 'rgba(255, 99, 132, 0.2)' : 'rgba(54, 162, 235, 0.2)'),
+                                borderColor: angkatanLabels.map(label => label === '{{ $angkatan }}' ? 'rgba(255, 99, 132, 1)' : 'rgba(54, 162, 235, 1)'),
+                                borderWidth: 1,
+                                data: angkatanCounts
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                legend: { display: true },
+                                title: {
+                                    display: true,
+                                    text: "Jumlah Mahasiswa per Angkatan untuk Prodi {{ $prodiList[$prodi] ?? '-' }}"
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
         @elseif($angkatan && !$prodi)
-            <!-- Kondisi lain, Anda bisa menambahkan dropdown chart_type dengan logika yang sama -->
-            <!-- ... -->
+            <!-- Angkatan Diisi, Semua Prodi -->
+            <h2 class="text-lg font-bold">Jumlah Mahasiswa di Semua Prodi untuk Angkatan {{ $angkatan }}</h2>
+
+            @if(!empty($dataMahasiswa))
+                <div class="flex justify-center mb-5">
+                    <div class="w-full" style="width: 80%;">
+                        <canvas id="semuaProdiChart" style=" width: 100%;"></canvas>
+                    </div>
+                </div>
+            @endif
+
+            <ul class="text-green-600 font-semibold">
+                @if(is_array($dataMahasiswa) && !empty($dataMahasiswa))
+                    @foreach($dataMahasiswa as $prodiName => $jumlah)
+                        <li>{{ $prodiName }}: {{ $jumlah }} mahasiswa</li>
+                    @endforeach
+                    <li class="font-bold text-green-600">Angkatan total: {{ array_sum($dataMahasiswa) }} mahasiswa</li>
+                @else
+                    <li class="text-red-500">Data belum tersedia.</li>
+                @endif
+            </ul>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const prodiData = @json($dataMahasiswa); // Ambil data prodi
+                    const prodiLabels = Object.keys(prodiData); // Ambil label prodi
+                    const prodiCounts = Object.values(prodiData); // Ambil jumlah mahasiswa per prodi
+
+                    const semuaProdiChart = new Chart("semuaProdiChart", {
+                        type: "bar",
+                        data: {
+                            labels: prodiLabels,
+                            datasets: [{
+                                label: 'Jumlah Mahasiswa per Prodi',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1,
+                                data: prodiCounts
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                legend: { display: true },
+                                title: {
+                                    display: true,
+                                    text: "Jumlah Mahasiswa per Prodi untuk Angkatan {{ $angkatan }}"
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
         @elseif($angkatan && $prodi)
-            <!-- Kondisi lain, data statis (tanpa chart), tidak perlu dropdown -->
-            <!-- ... -->
+            <!-- Kedua Parameter Terisi -->
+            <h2 class="text-lg font-bold">
+                Jumlah Mahasiswa untuk Prodi {{ $prodiList[$prodi] ?? '-' }} Angkatan {{ $angkatan }}
+            </h2>
+            <p class="text-green-600 font-semibold">
+                @if(isset($dataMahasiswa['total']))
+                    Total Mahasiswa: {{ $dataMahasiswa['total'] }}
+                @else
+                    <span class="text-red-500">Data belum tersedia.</span>
+                @endif
+            </p>
         @elseif(isset($dataMahasiswa['total']))
-            <!-- Kondisi lain dengan chart, sama seperti di atas, tambahkan dropdown chart_type -->
-            <!-- ... -->
+            <!-- Default Total Mahasiswa Aktif -->
+            <h2 class="text-lg font-bold">Total Mahasiswa Aktif</h2>
+            <p class="text-green-600 font-semibold">
+                Total Mahasiswa Aktif: {{ $dataMahasiswa['total'] }}
+            </p>
+
+            <!-- Inisialisasi Chart untuk Total Mahasiswa Aktif -->
+            <canvas id="totalMahasiswaAktifChart" class="mt-6"></canvas>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const ctxTotal = document.getElementById('totalMahasiswaAktifChart').getContext('2d');
+                    const totalChart = new Chart(ctxTotal, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Mahasiswa Aktif'],
+                            datasets: [{
+                                label: 'Total Mahasiswa Aktif',
+                                data: ['{{ $dataMahasiswa['total'] ?? 0 }}'],
+                                backgroundColor: ['rgba(75, 192, 192, 0.2)'],
+                                borderColor: ['rgba(75, 192, 192, 1)'],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
         @else
+            <!-- Fallback -->
             <p class="text-red-500">Data belum tersedia.</p>
         @endif
     </div>
 
     <!-- Prestasi Section -->
     <div class="bg-white shadow-md rounded-lg p-6 mt-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="prestasi" data-type="title">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="prestasi">
             {!! $sections['prestasi']->title ?? 'Prestasi' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="prestasi" data-type="description">
+        <p class="text-gray-600 mb-4 editable" data-section="prestasi">
             {!! $sections['prestasi']->description ?? 'Deskripsi Default' !!}
         </p>
+        <!-- Tambahkan konten lainnya untuk Prestasi jika diperlukan -->
 
         <!-- Form Filter Prestasi -->
         <form id="filterPrestasi" method="GET" action="{{ route(Auth::check() ? 'home.auth' : 'home.public') }}"
@@ -223,253 +346,198 @@
                     style="{{ request('waktu') == 'semester' ? '' : 'display: none;' }}"></canvas>
             </div>
         </div>
-
-        <!-- MODIFIKASI UNTUK CHART TYPE EDIT: Dropdown untuk prestasi -->
-        <!-- Tampilkan hanya jika salah satu chart prestasi terlihat -->
-        @if(request('waktu') == 'semester' || !request('waktu'))
-            <div id="chartTypeContainerPrestasi" class="hidden mb-4">
-                <label for="chartTypePrestasi" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart
-                    (Prestasi):</label>
-                <select id="chartTypePrestasi"
-                    class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-                    data-section="prestasi" data-type="chart_type">
-                    <option value="bar" {{ ($sections['prestasi']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar
-                    </option>
-                    <option value="line" {{ ($sections['prestasi']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line
-                    </option>
-                    <option value="pie" {{ ($sections['prestasi']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie
-                    </option>
-                </select>
-            </div>
-        @endif
     </div>
 
     <!-- Kegiatan Luar Kampus Section -->
     <div class="bg-white shadow-md rounded-lg p-6 mt-8">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="kegiatan_luar_kampus"
-            data-type="title">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="kegiatan_luar_kampus">
             {!! $sections['kegiatan_luar_kampus']->title ?? 'Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus' !!}
         </h1>
-        <p class="text-gray-600 mb-4 editable" data-section="kegiatan_luar_kampus" data-type="description">
+        <p class="text-gray-600 mb-4 editable" data-section="kegiatan_luar_kampus">
             {!! $sections['kegiatan_luar_kampus']->description ?? 'Deskripsi Default' !!}
         </p>
         <div class="space-y-4">
-            <!-- Deskripsi Kegiatan -->
-            <!-- ... (sama seperti sebelumnya) -->
+            <h5 class="font-bold text-gray-700">1. MBKM</h5>
+            <p class="text-gray-600">
+                Program MBKM (Merdeka Belajar Kampus Merdeka) memberikan mahasiswa kesempatan untuk belajar di luar
+                kelas,
+                mengembangkan keterampilan praktis, dan berkontribusi pada masyarakat. Melalui program ini,
+                mahasiswa dapat
+                mengikuti magang, proyek sosial, dan kegiatan lainnya yang mendukung pembelajaran holistik.
+            </p>
+
+            <h5 class="font-bold text-gray-700">2. IISMA</h5>
+            <p class="text-gray-600">
+                IISMA (<i>Indonesian International Student Mobility Awards</i>) adalah program yang memungkinkan
+                mahasiswa
+                Indonesia untuk belajar di universitas luar negeri. Program ini bertujuan untuk memperluas wawasan
+                global
+                mahasiswa, meningkatkan kemampuan bahasa, dan membangun jaringan internasional yang bermanfaat untuk
+                karier
+                mereka di masa depan.
+            </p>
+
+            <h5 class="font-bold text-gray-700">3. Kerja Praktik</h5>
+            <p class="text-gray-600">
+                Kerja praktik memberikan mahasiswa pengalaman langsung di dunia kerja, memungkinkan mereka untuk
+                menerapkan
+                teori yang telah dipelajari di kampus. Melalui kerja praktik, mahasiswa dapat mengembangkan
+                keterampilan
+                profesional dan membangun koneksi dengan industri.
+            </p>
+
+            <h5 class="font-bold text-gray-700">4. Studi Independent</h5>
+            <p class="text-gray-600">
+                Studi independent adalah kesempatan bagi mahasiswa untuk mengeksplorasi topik atau proyek penelitian
+                secara
+                mandiri. Program ini mendorong kreativitas dan inisiatif, memungkinkan mahasiswa untuk mendalami
+                minat pribadi
+                dan mengembangkan kemampuan analitis.
+            </p>
+
+            <h5 class="font-bold text-gray-700">5. Pertukaran Pelajar</h5>
+            <p class="text-gray-600">
+                Program pertukaran pelajar memungkinkan mahasiswa untuk belajar di institusi pendidikan di negara
+                lain selama
+                periode tertentu. Ini memberikan pengalaman budaya yang berharga, memperluas perspektif akademik,
+                dan
+                meningkatkan kemampuan adaptasi di lingkungan internasional.
+            </p>
         </div>
         <div class="flex justify-center mb-5">
             <div class="w-full" style="width: 80%;">
                 <canvas id="jlhMahasiswaKegiatanChart"></canvas>
             </div>
         </div>
-
-        <!-- MODIFIKASI UNTUK CHART TYPE EDIT: Dropdown untuk kegiatan_luar_kampus -->
-        <div id="chartTypeContainerKegiatanLuar" class="hidden mb-4">
-            <label for="chartTypeKegiatanLuar" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart
-                (Kegiatan Luar):</label>
-            <select id="chartTypeKegiatanLuar"
-                class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-                data-section="kegiatan_luar_kampus" data-type="chart_type">
-                <option value="bar" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar</option>
-                <option value="line" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line</option>
-                <option value="pie" {{ ($sections['kegiatan_luar_kampus']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie</option>
-            </select>
-        </div>
     </div>
 </div>
 
-<!-- Chart.js Library -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
+<!-- Script untuk Charts -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Prestasi Chart Inisialisasi
+        // Chart untuk Prestasi Tahun
         const prestasiTahunCanvas = document.getElementById('prestasiTahun');
-        const prestasiSemesterCanvas = document.getElementById('prestasiSemester');
-        let prestasiChart;
-        let currentPrestasiChartType = "{{ $sections['prestasi']->chart_type ?? 'bar' }}";
-
-        function initializePrestasiChart(chartType) {
-            // Hancurkan chart lama jika ada
-            if (prestasiChart) {
-                prestasiChart.destroy();
-            }
-
-            if (prestasiSemesterCanvas && prestasiSemesterCanvas.style.display !== 'none') {
-                // Mode semester
-                prestasiChart = new Chart(prestasiSemesterCanvas.getContext('2d'), {
-                    type: chartType,
-                    data: {
-                        labels: ["Ganjil", "Genap"],
-                        datasets: [
-                            {
-                                label: 'Akademik',
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1,
-                                data: [43, 45]
-                            },
-                            {
-                                label: 'Non-Akademik',
-                                backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                                borderColor: 'rgba(201, 203, 207, 1)',
-                                borderWidth: 1,
-                                data: [4, 5]
-                            }
-                        ]
-                    },
-                    options: {
-                        plugins: {
-                            legend: { display: true },
-                            title: {
-                                display: true,
-                                text: 'Jumlah Prestasi/Semester'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0 }
-                            }
-                        }
-                    }
-                });
-            } else if (prestasiTahunCanvas && prestasiTahunCanvas.style.display !== 'none') {
-                // Mode tahun
-                prestasiChart = new Chart(prestasiTahunCanvas.getContext('2d'), {
-                    type: chartType,
-                    data: {
-                        labels: @json($angkatanYears),
-                        datasets: [
-                            {
-                                label: 'Akademik',
-                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 1,
-                                data: [137, 145, 137, 159, 156, 151]
-                            },
-                            {
-                                label: 'Non-Akademik',
-                                backgroundColor: 'rgba(201, 203, 207, 0.2)',
-                                borderColor: 'rgba(201, 203, 207, 1)',
-                                borderWidth: 1,
-                                data: [17, 15, 13, 19, 16, 21]
-                            }
-                        ]
-                    },
-                    options: {
-                        plugins: {
-                            legend: { display: true },
-                            title: {
-                                display: true,
-                                text: 'Jumlah Prestasi/Tahun'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0 }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        // Inisialisasi chart Prestasi jika ada
-        if ((prestasiTahunCanvas && prestasiTahunCanvas.style.display !== 'none') ||
-            (prestasiSemesterCanvas && prestasiSemesterCanvas.style.display !== 'none')) {
-            initializePrestasiChart(currentPrestasiChartType);
-        }
-
-        const chartTypeSelectPrestasi = document.getElementById("chartTypePrestasi");
-        if (chartTypeSelectPrestasi) {
-            chartTypeSelectPrestasi.addEventListener("change", function () {
-                const selectedChartType = this.value;
-                initializePrestasiChart(selectedChartType);
-
-                // Simpan perubahan chart_type
-                const sectionKey = this.getAttribute("data-section");
-                if (!window.sectionChanges) {
-                    window.sectionChanges = {};
-                }
-                if (!window.sectionChanges[sectionKey]) {
-                    window.sectionChanges[sectionKey] = {};
-                }
-                window.sectionChanges[sectionKey].updatedChartType = selectedChartType;
-            });
-        }
-
-        // Kegiatan Luar Kampus Chart Inisialisasi
-        const kegiatanCanvas = document.getElementById('jlhMahasiswaKegiatanChart');
-        let kegiatanChart;
-        let currentKegiatanChartType = "{{ $sections['kegiatan_luar_kampus']->chart_type ?? 'bar' }}";
-
-        function initializeKegiatanChart(chartType) {
-            if (kegiatanChart) {
-                kegiatanChart.destroy();
-            }
-            if (kegiatanCanvas) {
-                const dummyKegiatanData = [137, 145, 137, 159, 156]; // Data Dummy
-                kegiatanChart = new Chart(kegiatanCanvas.getContext('2d'), {
-                    type: chartType,
-                    data: {
-                        labels: ["MBKM", "IISMA", "Kerja Praktik", "Studi Independent", "Pertukaran Pelajar"],
-                        datasets: [{
-                            label: 'Jumlah Mahasiswa',
-                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                            borderColor: 'rgba(153, 102, 255, 1)',
+        if (prestasiTahunCanvas) {
+            const dummyPrestasiTahunData = [137, 145, 137, 159, 156, 151]; // Data Dummy
+            const prestasiTahunChart = new Chart(prestasiTahunCanvas, {
+                type: 'bar',
+                data: {
+                    labels: @json($angkatanYears),
+                    datasets: [
+                        {
+                            label: 'Akademik',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
                             borderWidth: 1,
-                            data: dummyKegiatanData
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            legend: { display: true },
-                            title: {
-                                display: true,
-                                text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
-                            }
+                            data: dummyPrestasiTahunData
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { precision: 0 }
-                            }
+                        {
+                            label: 'Non-Akademik',
+                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
+                            borderColor: 'rgba(201, 203, 207, 1)',
+                            borderWidth: 1,
+                            data: [17, 15, 13, 19, 16, 21] // Data Dummy
+                        }
+                    ]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Jumlah Prestasi/Tahun'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
                         }
                     }
-                });
-            }
-        }
-
-        if (kegiatanCanvas) {
-            initializeKegiatanChart(currentKegiatanChartType);
-        }
-
-        const chartTypeSelectKegiatanLuar = document.getElementById("chartTypeKegiatanLuar");
-        if (chartTypeSelectKegiatanLuar) {
-            chartTypeSelectKegiatanLuar.addEventListener("change", function () {
-                const selectedChartType = this.value;
-                initializeKegiatanChart(selectedChartType);
-
-                // Simpan perubahan chart_type
-                const sectionKey = this.getAttribute("data-section");
-                if (!window.sectionChanges) {
-                    window.sectionChanges = {};
                 }
-                if (!window.sectionChanges[sectionKey]) {
-                    window.sectionChanges[sectionKey] = {};
-                }
-                window.sectionChanges[sectionKey].updatedChartType = selectedChartType;
             });
         }
 
-        // Simpan fungsi inisialisasi agar bisa diakses global (jika diperlukan)
-        window.initializeKegiatanChart = initializeKegiatanChart;
+        // Chart untuk Prestasi Semester
+        const prestasiSemesterCanvas = document.getElementById('prestasiSemester');
+        if (prestasiSemesterCanvas) {
+            const dummyPrestasiSemesterData = [43, 45]; // Data Dummy
+            const prestasiSemesterChart = new Chart(prestasiSemesterCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ["Ganjil", "Genap"],
+                    datasets: [
+                        {
+                            label: 'Akademik',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            data: dummyPrestasiSemesterData
+                        },
+                        {
+                            label: 'Non-Akademik',
+                            backgroundColor: 'rgba(201, 203, 207, 0.2)',
+                            borderColor: 'rgba(201, 203, 207, 1)',
+                            borderWidth: 1,
+                            data: [4, 5] // Data Dummy
+                        }
+                    ]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Jumlah Prestasi/Semester'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Chart untuk Jumlah Mahasiswa Kegiatan
+        const kegiatanCanvas = document.getElementById('jlhMahasiswaKegiatanChart');
+        if (kegiatanCanvas) {
+            const dummyKegiatanData = [137, 145, 137, 159, 156]; // Data Dummy
+            const kegiatanChart = new Chart(kegiatanCanvas, {
+                type: 'bar',
+                data: {
+                    labels: ["MBKM", "IISMA", "Kerja Praktik", "Studi Independent", "Pertukaran Pelajar"],
+                    datasets: [{
+                        label: 'Jumlah Mahasiswa',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        data: dummyKegiatanData
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: "Jumlah Mahasiswa yang Mengikuti Kegiatan di Luar Kampus"
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        }
     });
 </script>
+
 
 <!-- Edit Section Script -->
 <script>
@@ -478,67 +546,46 @@
         const editIcon = document.getElementById("editIcon");
         const editText = document.getElementById("editText");
         const editableElements = document.querySelectorAll(".editable");
-
-        const chartTypeContainerTotalMahasiswa = document.getElementById("chartTypeContainerTotalMahasiswa");
-        const chartTypeContainerPrestasi = document.getElementById("chartTypeContainerPrestasi");
-        const chartTypeContainerKegiatanLuar = document.getElementById("chartTypeContainerKegiatanLuar");
-
         let isEditing = false;
 
+        // Variabel untuk melacak perubahan
         const changes = {};
-        if (!window.sectionChanges) {
-            window.sectionChanges = {};
-        }
 
         editButton.addEventListener("click", () => {
             isEditing = !isEditing;
 
+            // Toggle contentEditable untuk elemen yang dapat diedit
             editableElements.forEach((element) => {
-                const sectionKey = element.getAttribute("data-section");
-                const type = element.getAttribute("data-type");
-
                 if (isEditing) {
+                    // Aktifkan mode edit
                     element.contentEditable = true;
                     element.style.border = "1px dashed gray";
 
-                    if (!changes[sectionKey]) {
-                        changes[sectionKey] = {};
-                    }
+                    // Simpan nilai awal
+                    const sectionKey = element.getAttribute("data-section");
+                    changes[sectionKey] = {
+                        original: element.innerHTML.trim(),
+                        updated: null
+                    };
 
-                    if (type === "title") {
-                        changes[sectionKey].originalTitle = element.innerHTML.trim();
-                    } else if (type === "description") {
-                        changes[sectionKey].originalDescription = element.innerHTML.trim();
-                    }
                 } else {
+                    // Nonaktifkan mode edit
                     element.contentEditable = false;
                     element.style.border = "none";
 
-                    if (type === "title") {
-                        const updatedTitle = element.innerHTML.trim();
-                        if (changes[sectionKey].originalTitle !== updatedTitle) {
-                            changes[sectionKey].updatedTitle = updatedTitle;
-                        }
-                    } else if (type === "description") {
-                        const updatedDescription = element.innerHTML.trim();
-                        if (changes[sectionKey].originalDescription !== updatedDescription) {
-                            changes[sectionKey].updatedDescription = updatedDescription;
-                        }
+                    // Cek apakah ada perubahan
+                    const sectionKey = element.getAttribute("data-section");
+                    const updatedValue = element.innerHTML.trim();
+
+                    if (changes[sectionKey] && changes[sectionKey].original !== updatedValue) {
+                        // Simpan perubahan
+                        changes[sectionKey].updated = updatedValue;
+                    } else {
+                        // Hapus perubahan jika tidak ada yang berubah
+                        delete changes[sectionKey];
                     }
                 }
             });
-
-            // Tampilkan/hilangkan dropdown chart type saat mode edit aktif (jika chart tersedia)
-            if (chartTypeContainerTotalMahasiswa) {
-                chartTypeContainerTotalMahasiswa.classList.toggle('hidden', !isEditing);
-            }
-            if (chartTypeContainerPrestasi && ((document.getElementById('prestasiTahun') && document.getElementById('prestasiTahun').style.display !== 'none')
-                || (document.getElementById('prestasiSemester') && document.getElementById('prestasiSemester').style.display !== 'none'))) {
-                chartTypeContainerPrestasi.classList.toggle('hidden', !isEditing);
-            }
-            if (chartTypeContainerKegiatanLuar && document.getElementById('jlhMahasiswaKegiatanChart')) {
-                chartTypeContainerKegiatanLuar.classList.toggle('hidden', !isEditing);
-            }
 
             // Ganti ikon dan teks tombol
             editIcon.classList.toggle("bi-pencil", !isEditing);
@@ -548,11 +595,12 @@
             editText.style.color = isEditing ? "green" : "orange";
 
             if (!isEditing) {
+                // Simpan hanya perubahan
                 saveChanges();
             }
         });
 
-        // Handle Enter key untuk <br> saat editing
+        // Handle Enter key untuk menyisipkan <br> dalam mode edit
         editableElements.forEach((element) => {
             element.addEventListener("keydown", function (e) {
                 if (e.key === "Enter") {
@@ -561,10 +609,12 @@
                     if (!selection.rangeCount) return;
                     const range = selection.getRangeAt(0);
 
+                    // Sisipkan <br> di posisi kursor
                     const br = document.createElement("br");
                     range.deleteContents();
                     range.insertNode(br);
 
+                    // Pindahkan kursor ke setelah <br>
                     range.setStartAfter(br);
                     range.collapse(true);
                     selection.removeAllRanges();
@@ -576,33 +626,10 @@
         function saveChanges() {
             const payload = {};
 
-            // Gabungkan perubahan title/description dari changes
+            // Kumpulkan hanya perubahan
             for (const sectionKey in changes) {
-                if (!payload[sectionKey]) {
-                    payload[sectionKey] = {};
-                }
-                if (changes[sectionKey].updatedTitle) {
-                    payload[sectionKey].title = changes[sectionKey].updatedTitle;
-                }
-                if (changes[sectionKey].updatedDescription) {
-                    payload[sectionKey].description = changes[sectionKey].updatedDescription;
-                }
-            }
-
-            // Gabungkan perubahan chart_type dari window.sectionChanges
-            for (const sectionKey in window.sectionChanges) {
-                if (!payload[sectionKey]) {
-                    payload[sectionKey] = {};
-                }
-                if (window.sectionChanges[sectionKey].updatedChartType) {
-                    payload[sectionKey].chart_type = window.sectionChanges[sectionKey].updatedChartType;
-                }
-            }
-
-            // Hapus sectionKey yang tidak ada perubahan
-            for (const sectionKey in payload) {
-                if (Object.keys(payload[sectionKey]).length === 0) {
-                    delete payload[sectionKey];
+                if (changes[sectionKey].updated !== null) {
+                    payload[sectionKey] = { description: changes[sectionKey].updated };
                 }
             }
 
@@ -611,6 +638,7 @@
                 return;
             }
 
+            // Kirim data ke server
             fetch("{{ route('sections.update') }}", {
                 method: "POST",
                 headers: {
@@ -626,27 +654,15 @@
                             location.reload();
                         });
                     } else {
-                        let errorMessages = '';
-                        for (const field in data.errors) {
-                            errorMessages += `${field}: ${data.errors[field].join(', ')}<br>`;
-                        }
-                        Swal.fire("Error", "Terjadi kesalahan:<br>" + errorMessages, "error");
+                        Swal.fire("Error", "Terjadi kesalahan: " + JSON.stringify(data.errors), "error");
                     }
                 })
                 .catch((error) => {
                     console.error("Error:", error);
                     Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
-                })
-                .finally(() => {
-                    for (const sectionKey in changes) {
-                        delete changes[sectionKey];
-                    }
-                    for (const sectionKey in window.sectionChanges) {
-                        delete window.sectionChanges[sectionKey];
-                    }
                 });
         }
     });
-</script>
 
+</script>
 @endsection

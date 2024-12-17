@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
   <!-- Log Mahasiswa Section -->
-  <div class="bg-white shadow rounded-lg p-6 mb-8">
+  <div class="bg-white shadow rounded-lg p-6 mb-8 relative group">
     <h1 class="text-2xl font-bold text-gray-800 mb-4 editable" data-section="log_keluar_masuk_mahasiswa"
       data-type="title">
       {!! $sections['log_keluar_masuk_mahasiswa']->title ?? 'Log Keluar/Masuk Mahasiswa' !!}
@@ -65,9 +65,31 @@
       </div>
     </form>
 
-    <div class="w-full" style="width: 80%;">
-      <canvas id="logKeluarMasukChart" style="width: 100%;"></canvas>
+    @php
+    // Cek apakah ada data yang OK
+    $showChart = false;
+    if ((isset($dataMasuk) && $dataMasuk['result'] === 'OK') || (isset($dataKeluar) && $dataKeluar['result'] === 'OK')) {
+      $showChart = true;
+    }
+  @endphp
+
+    <!-- Dropdown Jenis Chart (Hanya Muncul Saat Edit) -->
+    <div id="chartTypeContainerLog" class="hidden mb-4 w-full sm:w-96">
+      <label for="chartTypeLog" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
+      <select id="chartTypeLog"
+        class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+        data-section="log_keluar_masuk_mahasiswa" data-type="chart_type">
+        <option value="bar" {{ ($sections['log_keluar_masuk_mahasiswa']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>Bar</option>
+        <option value="line" {{ ($sections['log_keluar_masuk_mahasiswa']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line</option>
+        <option value="pie" {{ ($sections['log_keluar_masuk_mahasiswa']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>Pie</option>
+      </select>
     </div>
+
+    @if($showChart)
+    <div class="w-full sm:w-96 h-96 transition-all duration-500" id="chartContainerLog" style="margin: 0 auto;">
+      <canvas id="logKeluarMasukChart" style="width: 100%; height: 100%;"></canvas>
+    </div>
+  @endif
 
     <!-- Display Data -->
     <div class="mt-4">
@@ -126,12 +148,6 @@
   </div>
 </div>
 
-<!-- Script untuk Editing Sections -->
-<!-- Pastikan Anda telah mengimpor SweetAlert dan Bootstrap Icons di layout utama (auth.app) -->
-<!-- Contoh: -->
-<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"> -->
-<!-- <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
-
 <!-- Edit Section Script -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -139,6 +155,8 @@
     const editIcon = document.getElementById("editIcon");
     const editText = document.getElementById("editText");
     const editableElements = document.querySelectorAll(".editable");
+    const chartTypeContainerLog = document.getElementById("chartTypeContainerLog");
+    const chartTypeSelectLog = document.getElementById("chartTypeLog");
     let isEditing = false;
 
     // Variabel untuk melacak perubahan
@@ -189,7 +207,11 @@
         }
       });
 
-      // Ganti ikon dan teks tombol
+      // Tampilkan/hilangkan dropdown chart type saat edit
+      if (chartTypeContainerLog) {
+        chartTypeContainerLog.classList.toggle('hidden', !isEditing);
+      }
+
       editIcon.classList.toggle("bi-pencil", !isEditing);
       editIcon.classList.toggle("bi-check-circle", isEditing);
       editIcon.style.color = isEditing ? "green" : "orange";
@@ -240,6 +262,10 @@
           payload[sectionKey].description = changes[sectionKey].updatedDescription;
         }
 
+        if (changes[sectionKey].updatedChartType) {
+          payload[sectionKey].chart_type = changes[sectionKey].updatedChartType;
+        }
+
         // Hapus keys jika tidak ada perubahan
         if (Object.keys(payload[sectionKey]).length === 0) {
           delete payload[sectionKey];
@@ -279,69 +305,123 @@
           Swal.fire("Error", "Gagal menyimpan perubahan.", "error");
         });
     }
+
+    // Event listener untuk chart type pada log_keluar_masuk_mahasiswa
+    if (chartTypeSelectLog) {
+      chartTypeSelectLog.addEventListener("change", function () {
+        const sectionKey = this.getAttribute("data-section");
+        if (!changes[sectionKey]) {
+          changes[sectionKey] = {};
+        }
+        changes[sectionKey].updatedChartType = this.value;
+        if (typeof updateChart === 'function') {
+          updateChart(this.value);
+        }
+      });
+    }
   });
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const type = ["Masuk", "Keluar"];
-
+    @if($showChart)
+    const Masuk = {{ $dataMasuk['total'] ?? '0' }};
+    const Keluar = {{ $dataKeluar['total'] ?? '0' }};
+    const typeLabels = ["Masuk", "Keluar"];
     let logKeluarMasukChart;
 
-    function updateChart(chartType = "{{ $sections['absensi_asrama']->chart_type ?? 'bar' }}") {
-      const Masuk = {{ $dataMasuk['total'] ?? '0' }};
-      const Keluar = {{ $dataKeluar['total'] ?? '0' }};
+    function updateChart(chartType = "{{ $sections['log_keluar_masuk_mahasiswa']->chart_type ?? 'bar' }}") {
       const jlhAbsensi = [Masuk, Keluar];
-
       const maxValue = Math.max(...jlhAbsensi);
       const gap = maxValue;
       const yMax = maxValue + gap;
 
       if (logKeluarMasukChart) {
-        logKeluarMasukChart.destroy();
+      logKeluarMasukChart.destroy();
       }
 
       logKeluarMasukChart = new Chart("logKeluarMasukChart", {
-        type: chartType,
-        data: {
-          labels: type,
-          datasets: [
-            {
-              label: 'Jumlah Mahasiswa yang Absen',
-              backgroundColor: 'royalblue',
-              data: jlhAbsensi
-            }
-          ]
+      type: chartType,
+      data: {
+        labels: typeLabels,
+        datasets: [
+        {
+          label: 'Jumlah Mahasiswa',
+          backgroundColor: ['royalblue', 'orange'],
+          data: jlhAbsensi
+        }
+        ]
+      },
+      options: {
+        plugins: {
+        legend: { display: true },
+        title: {
+          display: true,
+          text: "Log Keluar/Masuk Mahasiswa"
+        }
         },
-        options: {
-          plugins: {
-            legend: { display: true },
-            title: {
-              display: true,
-              text: "Jumlah Absensi"
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: yMax
-            }
+        scales: chartType === 'pie' ? {} : {
+        y: {
+          beginAtZero: true,
+          max: yMax,
+          grid: {
+          display: true
+          }
+        },
+        x: {
+          grid: {
+          display: true
           }
         }
+        },
+        maintainAspectRatio: false // Agar bisa mengontrol tinggi chart
+      }
       });
     }
 
-    // Inisialisasi chart dengan jenis yang benar
+    // Inisialisasi chart pertama kali
     updateChart();
 
     // Event listener untuk live preview saat dropdown chart type berubah
-    const chartTypeSelectAbsensi = document.getElementById("chartTypeAbsensi");
-    if (chartTypeSelectAbsensi) {
-      chartTypeSelectAbsensi.addEventListener("change", function () {
-        updateChart(this.value);
+    const chartTypeSelectLog = document.getElementById("chartTypeLog");
+    if (chartTypeSelectLog) {
+      chartTypeSelectLog.addEventListener("change", function () {
+      updateChart(this.value);
       });
     }
+  @endif
   });
 </script>
+
+<style>
+  /* Transisi untuk perubahan ukuran chart */
+  #chartContainerLog {
+    transition: width 0.5s ease, height 0.5s ease;
+  }
+
+  /* Pastikan chartTypeContainerLog tidak menumpuk elemen lain */
+  #chartTypeContainerLog {
+    z-index: 10;
+  }
+
+  /* Saat edit mode aktif, dropdown chart type muncul */
+  /* Sudah di-handle oleh JS toggle pada edit mode */
+
+  /* Responsive adjustments */
+  @media (min-width: 640px) {
+    #chartContainerLog {
+      width: 384px;
+      /* sm:w-96 */
+      height: 450px;
+    }
+  }
+
+  @media (max-width: 639px) {
+    #chartContainerLog {
+      width: 100%;
+      height: 450px;
+    }
+  }
+</style>
 
 @endsection
