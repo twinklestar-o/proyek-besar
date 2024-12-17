@@ -8,6 +8,14 @@
                 <div class="card-body text-center">
                     <img src="/Logo.png" alt="Logo" class="mb-1" style="width: 5rem; height: auto;">
                     <h5 class="card-title mb-4">Sistem Informasi Orangtua Mahasiswa</h5>
+
+                    {{-- Menampilkan Pesan Error Umum --}}
+                    @if ($errors->has('login'))
+                        <div class="alert alert-danger">
+                            {{ $errors->first('login') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="form-group mt-4 mb-3 text-start">
@@ -35,7 +43,7 @@
                             <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
                             <label class="form-check-label" for="remember">Ingat Saya</label>
                         </div>
-                        <button type="submit" class="btn">Login</button>
+                        <button type="submit" class="btn btn-primary">Login</button>
                     </form>
                 </div>
             </div>
