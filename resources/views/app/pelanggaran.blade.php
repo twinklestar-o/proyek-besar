@@ -11,6 +11,17 @@
     '17' => 'Kana',
     '20' => 'Jati',
   ];
+
+  // Definisikan label tingkat pelanggaran jika belum didefinisikan
+  $tingkatPelanggaranLabels = [
+    '1' => 'Ringan Level I (Poin 1-5)',
+    '2' => 'Ringan Level II (Poin 6-10)',
+    '3' => 'Sedang Level I (Poin 11-15)',
+    '4' => 'Sedang Level II (Poin 16-24)',
+    '5' => 'Berat Level I (Poin 25-30)',
+    '6' => 'Berat Level II (Poin 31-75)',
+    '7' => 'Berat Level III (Poin >=76)',
+  ];
 @endphp
 
 <div class="container mx-auto px-4 py-8">
@@ -86,21 +97,25 @@
       <h2 class="text-xl font-bold text-gray-800 mb-2">Data Pelanggaran</h2>
 
       @if(isset($data) && isset($data['data']) && count($data['data']) > 0)
-      <div class="flex justify-center mb-5">
-      <div class="w-full" style="width: 80%;">
-        <canvas id="pelanggaranChart" style=" width: 100%;"></canvas>
-        <div id="chartTypeContainer" class="hidden mb-4">
+      <div class="flex flex-col items-center mb-5">
+      <!-- Dropdown Jenis Chart -->
+      <div id="chartTypeContainer" class="mb-4 w-full sm:w-80">
         <label for="chartType" class="block text-gray-700 font-semibold mb-2">Pilih Jenis Chart:</label>
         <select id="chartType"
-          class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
-          data-section="pelanggaran_asrama" data-type="chart_type">
-          <option value="bar" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>
+        class="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500 px-4 py-2"
+        data-section="pelanggaran_asrama" data-type="chart_type">
+        <option value="bar" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'bar' ? 'selected' : '' }}>
           Bar</option>
-          <option value="line" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>Line</option>
-          <option value="pie" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>
+        <option value="line" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'line' ? 'selected' : '' }}>
+          Line</option>
+        <option value="pie" {{ ($sections['pelanggaran_asrama']->chart_type ?? 'bar') == 'pie' ? 'selected' : '' }}>
           Pie</option>
         </select>
-        </div>
+      </div>
+
+      <!-- Kontainer Chart -->
+      <div id="chartContainerPelanggaran" class="w-full sm:w-80 transition-all duration-500">
+        <canvas id="pelanggaranChart" style="width: 100%;"></canvas>
       </div>
       </div>
     @endif
@@ -152,6 +167,15 @@
     </button>
   </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- jQuery (untuk AJAX) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 Library -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- TinyMCE Inline Editor -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@5/tinymce.min.js"></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -242,6 +266,7 @@
       editText.style.color = isEditing ? "green" : "orange";
 
       if (!isEditing) {
+        // Simpan perubahan saat mode edit dimatikan
         saveChanges();
       }
     });
@@ -423,9 +448,9 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const barColors = ["blue", "orange", "red", "green", "purple", "teal", "gray"];
-    const type = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
+    const typeLabels = ["Ringan Level I", "Ringan Level II", "Sedang Level I", "Sedang Level II", "Berat Level I", "Berat Level II", "Berat Level III"];
 
-    function updateChart() {
+    function updateChart(chartType) {
       const ringanLevel1 = {{ $data['data']['pelanggaran_per_level'][1] ?? 0 }};
       const ringanLevel2 = {{ $data['data']['pelanggaran_per_level'][2] ?? 0 }};
       const sedangLevel1 = {{ $data['data']['pelanggaran_per_level'][3] ?? 0 }};
@@ -443,10 +468,22 @@
         pelanggaranChart.destroy();
       }
 
+      // Referensi ke kontainer chart
+      const chartContainerPelanggaran = document.getElementById("chartContainerPelanggaran");
+
+      // Sesuaikan ukuran kontainer berdasarkan jenis chart
+      if (chartType === 'pie') {
+        chartContainerPelanggaran.style.width = "60%"; // Perkecil lebar untuk pie chart
+        chartContainerPelanggaran.style.height = "400px"; // Perkecil tinggi jika diperlukan
+      } else {
+        chartContainerPelanggaran.style.width = "80%"; // Kembali ke lebar semula
+        chartContainerPelanggaran.style.height = "500px"; // Kembali ke tinggi semula
+      }
+
       pelanggaranChart = new Chart("pelanggaranChart", {
-        type: "{{ $sections['pelanggaran_asrama']->chart_type ?? 'bar' }}",
+        type: chartType,
         data: {
-          labels: type,
+          labels: typeLabels,
           datasets: [
             {
               label: 'Jumlah Pelanggaran',
@@ -463,30 +500,61 @@
               text: "Data Pelanggaran Asrama"
             }
           },
-          scales: {
+          scales: chartType === 'pie' ? {} : { // Hilangkan skala untuk pie chart
             y: {
               beginAtZero: true,
-              max: yMax
+              max: yMax,
+              grid: {
+                display: true
+              }
+            },
+            x: {
+              grid: {
+                display: true
+              }
             }
-          }
+          },
+          maintainAspectRatio: false // Agar bisa mengontrol tinggi chart
         }
       });
     }
 
     let pelanggaranChart;
+    const chartTypeSelect = document.getElementById("chartType");
+
     if ({{ isset($data) && isset($data['data']) && count($data['data']) > 0 ? 'true' : 'false' }}) {
-      updateChart();
+      const initialChartType = "{{ $sections['pelanggaran_asrama']->chart_type ?? 'bar' }}";
+      updateChart(initialChartType);
+    }
+
+    if (chartTypeSelect) {
+      chartTypeSelect.addEventListener("change", function () {
+        const selectedChartType = this.value;
+        updateChart(selectedChartType);
+      });
     }
   });
 </script>
 
 <style>
+  /* Transisi untuk perubahan ukuran chart */
+  #chartContainerPelanggaran {
+    transition: width 0.5s ease, height 0.5s ease;
+  }
+
+  /* Tampilkan tombol "+" saat grup di-hover */
   .group:hover #addSectionButton {
     opacity: 1 !important;
   }
 
   #addSectionButton {
     transition: opacity 0.3s ease;
+  }
+
+  /* Pastikan chartTypeContainer tidak menumpuk tabel data */
+  #chartTypeContainer {
+    z-index: 10;
+    /* Sesuaikan jika diperlukan */
   }
 </style>
 
