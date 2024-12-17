@@ -124,4 +124,45 @@ class ContentController extends Controller
             ], 500);
         }
     }
+
+    // app/Http/Controllers/ContentController.php
+
+    public function deleteSection(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'section' => 'required|string|exists:sections,section',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $sectionKey = $request->input('section');
+
+        try {
+            $section = Section::where('section', $sectionKey)->first();
+            if ($section) {
+                $section->delete();
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Section berhasil dihapus.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Section tidak ditemukan.'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menghapus section.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
