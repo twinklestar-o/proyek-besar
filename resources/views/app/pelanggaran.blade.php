@@ -161,11 +161,11 @@
     </div>
 
     <!-- Tombol "+" di bagian bawah container utama -->
-    <button
+    <!-- <button
       class="absolute left-1/2 -translate-x-1/2 bottom-0 mb-[-16px] bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-green-600 hidden"
       id="addSectionButton" title="Tambah Section Baru">
       +
-    </button>
+    </button> -->
   </div>
 </div>
 

@@ -21,16 +21,21 @@
     <script src="https://cdn.tiny.cloud/1/dbs9ztji4pla4u37q7np5b1o8rq6yv325he848tz6b2xi1a0/tinymce/6/tinymce.min.js"
         referrerpolicy="origin"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Inisialisasi TinyMCE pada modal input
-            tinymce.init({
-                selector: '#newSectionDescription',
-                height: 200,
-                menubar: false,
-                plugins: 'lists link image preview',
-                toolbar: 'undo redo | bold italic underline | bullist numlist | link image | preview',
-            });
+        // Existing TinyMCE Initialization for Sidebar Admin
+        tinymce.init({
+            selector: '.tinymce-editor', // Update the selector to match dynamically added editors
+            height: 300,
+            menubar: false,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+            alignleft aligncenter alignright alignjustify | \
+            bullist numlist outdent indent | removeformat | help'
         });
+
     </script>
     <style>
         /* Extend Tailwind default configuration */
