@@ -53,7 +53,7 @@
             <!-- Filter button -->
             <div>
                 <button type="submit"
-                    class="bg-indigo-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
+                    class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-200">
                     Ambil Data
                 </button>
             </div>
@@ -184,8 +184,8 @@
                                 datasets: [{
                                     label: 'Jumlah Mahasiswa per Prodi',
                                     data: prodiCounts,
-                                    backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(54, 162, 235, 0.2)',
-                                    borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(54, 162, 235, 1)',
+                                    backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(7, 71, 153, 0.2)',
+                                    borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(7, 71, 153, 1)',
                                     borderWidth: 1
                                 }]
                             },
@@ -299,8 +299,8 @@
                             datasets: [{
                                 label: 'Jumlah Mahasiswa per Angkatan',
                                 data: angkatanCounts,
-                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, angkatanLabels.length) : 'rgba(75, 192, 192, 0.2)',
-                                borderColor: chartType === 'pie' ? borderColors.slice(0, angkatanLabels.length) : 'rgba(75, 192, 192, 1)',
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, angkatanLabels.length) : 'rgba(7, 71, 153, 0.2)',
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, angkatanLabels.length) : 'rgba(7, 71, 153, 1)',
                                 borderWidth: 1
                             }]
                         },
@@ -413,8 +413,8 @@
                             datasets: [{
                                 label: 'Jumlah Mahasiswa per Prodi',
                                 data: prodiCounts,
-                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(75, 192, 192, 0.2)',
-                                borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(75, 192, 192, 1)',
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, prodiLabels.length) : 'rgba(7, 71, 153, 0.2)',
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, prodiLabels.length) : 'rgba(7, 71, 153, 1)',
                                 borderWidth: 1
                             }]
                         },
@@ -534,8 +534,8 @@
                             datasets: [{
                                 label: 'Total Mahasiswa Aktif',
                                 data: [totalCount],
-                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, 1) : ['rgba(75, 192, 192, 0.2)'],
-                                borderColor: chartType === 'pie' ? borderColors.slice(0, 1) : ['rgba(75, 192, 192, 1)'],
+                                backgroundColor: chartType === 'pie' ? backgroundColors.slice(0, 1) : ['rgba(7, 71, 153, 0.2)'],
+                                borderColor: chartType === 'pie' ? borderColors.slice(0, 1) : ['rgba(7, 71, 153, 1)'],
                                 borderWidth: 1
                             }]
                         },
@@ -741,15 +741,15 @@
                         {
                             label: 'Akademik',
                             data: dummyPrestasiTahunData,
-                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(54, 162, 235, 0.2)',
-                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(54, 162, 235, 1)',
+                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(7, 71, 153, 0.2)',
+                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, dummyPrestasiTahunData.length) : 'rgba(7, 71, 153, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Non-Akademik',
                             data: [17, 15, 13, 19, 16, 21], // Data Dummy
-                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(201, 203, 207, 0.2)',
-                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, 2) : 'rgba(201, 203, 207, 1)',
+                            backgroundColor: chartTypePrestasiTahun === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(73, 78, 83, 0.2)',
+                            borderColor: chartTypePrestasiTahun === 'pie' ? borderColors.slice(0, 2) : 'rgba(73, 78, 83, 1)',
                             borderWidth: 1
                         }
                     ]
@@ -766,12 +766,12 @@
 
             // Definisikan warna yang berbeda untuk setiap dataset jika diperlukan
             const backgroundColors = [
-                'rgba(75, 192, 192, 0.2)',
+                'rgba(7, 71, 153, 0.2)',
                 'rgba(201, 203, 207, 0.2)'
             ];
 
             const borderColors = [
-                'rgba(75, 192, 192, 1)',
+                'rgba(7, 71, 153, 1)',
                 'rgba(201, 203, 207, 1)'
             ];
 
@@ -819,15 +819,15 @@
                         {
                             label: 'Akademik',
                             data: dummyPrestasiSemesterData,
-                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(75, 192, 192, 0.2)',
-                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(75, 192, 192, 1)',
+                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(7, 71, 153, 0.2)',
+                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, dummyPrestasiSemesterData.length) : 'rgba(7, 71, 153, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Non-Akademik',
                             data: [4, 5], // Data Dummy
-                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(201, 203, 207, 0.2)',
-                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, 2) : 'rgba(201, 203, 207, 1)',
+                            backgroundColor: chartTypePrestasiSemester === 'pie' ? backgroundColors.slice(0, 2) : 'rgba(73, 78, 83, 0.2)',
+                            borderColor: chartTypePrestasiSemester === 'pie' ? borderColors.slice(0, 2) : 'rgba(73, 78, 83, 1)',
                             borderWidth: 1
                         }
                     ]
@@ -902,8 +902,8 @@
                     datasets: [{
                         label: 'Jumlah Mahasiswa',
                         data: dummyKegiatanData,
-                        backgroundColor: chartTypeKegiatan === 'pie' ? backgroundColors.slice(0, dummyKegiatanData.length) : 'rgba(153, 102, 255, 0.2)',
-                        borderColor: chartTypeKegiatan === 'pie' ? borderColors.slice(0, dummyKegiatanData.length) : 'rgba(153, 102, 255, 1)',
+                        backgroundColor: chartTypeKegiatan === 'pie' ? backgroundColors.slice(0, dummyKegiatanData.length) : 'rgba(7, 71, 153, 0.2)',
+                        borderColor: chartTypeKegiatan === 'pie' ? borderColors.slice(0, dummyKegiatanData.length) : 'rgba(7, 71, 153, 1)',
                         borderWidth: 1
                     }]
                 },

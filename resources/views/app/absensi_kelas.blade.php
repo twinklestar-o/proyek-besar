@@ -120,7 +120,7 @@
         <!-- Tombol Ambil Data -->
         <div>
           <button type="button" id="ambilData"
-            class="bg-green-600 text-white font-bold mt-3 py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring focus:ring-green-200">
+            class="bg-blue-600 text-white font-bold mt-3 py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring focus:ring-green-200">
             Ambil Data
           </button>
         </div>
