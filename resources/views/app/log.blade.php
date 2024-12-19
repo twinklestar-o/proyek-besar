@@ -71,7 +71,7 @@
     if ((isset($dataMasuk) && $dataMasuk['result'] === 'OK') || (isset($dataKeluar) && $dataKeluar['result'] === 'OK')) {
       $showChart = true;
     }
-  @endphp
+    @endphp
 
     <!-- Dropdown Jenis Chart (Hanya Muncul Saat Edit) -->
     <div id="chartTypeContainerLog" class="hidden mb-4 w-full sm:w-96">
