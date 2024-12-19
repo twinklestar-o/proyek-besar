@@ -175,8 +175,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- SweetAlert2 Library -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- TinyMCE Inline Editor -->
-<script src="https://cdn.jsdelivr.net/npm/tinymce@5/tinymce.min.js"></script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -206,8 +204,6 @@
     const chartTypeSelect = document.getElementById("chartType");
     const addSectionButton = document.getElementById('addSectionButton');
 
-    // Inisialisasi TinyMCE Inline untuk element yang sudah ada
-    initTinyMCEInline();
     updateEditableElements();
 
     editButton.addEventListener("click", () => {
@@ -305,8 +301,6 @@
         originalDescription: 'Masukkan teks disini...'
       };
 
-      // Re-init TinyMCE inline pada elemen baru
-      initTinyMCEInline();
       updateEditableElements();
     });
 
@@ -317,19 +311,6 @@
           changes[sectionKey] = {};
         }
         changes[sectionKey].updatedChartType = this.value;
-      });
-    }
-
-    function initTinyMCEInline() {
-      // Hapus semua instance agar reinit bersih
-      tinymce.remove();
-
-      tinymce.init({
-        selector: '.editable',
-        inline: true,
-        menubar: false,
-        plugins: 'link lists',
-        toolbar: 'undo redo | formatselect | bold italic underline | bullist numlist | link'
       });
     }
 
