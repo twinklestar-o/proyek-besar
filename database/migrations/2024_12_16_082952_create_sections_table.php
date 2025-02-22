@@ -16,6 +16,7 @@ class CreateSectionsTable extends Migration
             $table->string('section')->unique(); // Identifier unik untuk setiap section
             $table->string('title');
             $table->text('description');
+            $table->string('chart_type')->nullable();
             $table->timestamps();
         });
 
